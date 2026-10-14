@@ -1,0 +1,413 @@
+{
+ "source": "Business Challenge 2026 Strategy Round dataset (AI in E-commerce)",
+ "period": {
+  "from": "2026-09-01",
+  "to": "2026-10-15"
+ },
+ "rows": 8059,
+ "orders": 6047,
+ "riderZones": 6,
+ "locations": 192,
+ "kpis": {
+  "firstAttemptSuccess": 0.7271,
+  "redeliveryRate": 0.2644,
+  "returnRate": 0.0286,
+  "finalSuccessRate": 0.9714,
+  "avgAttempts": 1.3327
+ },
+ "caseTargets": {
+  "firstAttemptSuccess": 0.88,
+  "redeliveryRate": 0.105,
+  "returnRate": 0.015,
+  "finalSuccessRate": 0.985,
+  "avgAttempts": 1.1
+ },
+ "byWindow": [
+  {
+   "attempt_time": "afternoon",
+   "n": 2171,
+   "success": 0.7877
+  },
+  {
+   "attempt_time": "evening",
+   "n": 2108,
+   "success": 0.5972
+  },
+  {
+   "attempt_time": "morning",
+   "n": 1768,
+   "success": 0.8077
+  }
+ ],
+ "byTypeWindow": [
+  {
+   "location_type": "gated_facility",
+   "attempt_time": "afternoon",
+   "n": 860,
+   "success": 0.864
+  },
+  {
+   "location_type": "gated_facility",
+   "attempt_time": "evening",
+   "n": 801,
+   "success": 0.8202
+  },
+  {
+   "location_type": "gated_facility",
+   "attempt_time": "morning",
+   "n": 666,
+   "success": 0.8483
+  },
+  {
+   "location_type": "industrial",
+   "attempt_time": "afternoon",
+   "n": 68,
+   "success": 0.8529
+  },
+  {
+   "location_type": "industrial",
+   "attempt_time": "evening",
+   "n": 69,
+   "success": 0.8986
+  },
+  {
+   "location_type": "industrial",
+   "attempt_time": "morning",
+   "n": 48,
+   "success": 0.5625
+  },
+  {
+   "location_type": "office",
+   "attempt_time": "afternoon",
+   "n": 274,
+   "success": 0.7153
+  },
+  {
+   "location_type": "office",
+   "attempt_time": "evening",
+   "n": 274,
+   "success": 0.4307
+  },
+  {
+   "location_type": "office",
+   "attempt_time": "morning",
+   "n": 230,
+   "success": 0.7087
+  },
+  {
+   "location_type": "school",
+   "attempt_time": "afternoon",
+   "n": 969,
+   "success": 0.7358
+  },
+  {
+   "location_type": "school",
+   "attempt_time": "evening",
+   "n": 964,
+   "success": 0.4378
+  },
+  {
+   "location_type": "school",
+   "attempt_time": "morning",
+   "n": 824,
+   "success": 0.8167
+  }
+ ],
+ "byTypeDay": [
+  {
+   "location_type": "gated_facility",
+   "weekend": false,
+   "n": 1738,
+   "success": 0.8504
+  },
+  {
+   "location_type": "gated_facility",
+   "weekend": true,
+   "n": 589,
+   "success": 0.8268
+  },
+  {
+   "location_type": "industrial",
+   "weekend": false,
+   "n": 143,
+   "success": 0.7832
+  },
+  {
+   "location_type": "industrial",
+   "weekend": true,
+   "n": 42,
+   "success": 0.8333
+  },
+  {
+   "location_type": "office",
+   "weekend": false,
+   "n": 591,
+   "success": 0.7225
+  },
+  {
+   "location_type": "office",
+   "weekend": true,
+   "n": 187,
+   "success": 0.2674
+  },
+  {
+   "location_type": "school",
+   "weekend": false,
+   "n": 2048,
+   "success": 0.6782
+  },
+  {
+   "location_type": "school",
+   "weekend": true,
+   "n": 709,
+   "success": 0.591
+  }
+ ],
+ "byPayment": [
+  {
+   "payment_type": "cod",
+   "n": 2103,
+   "success": 0.6847
+  },
+  {
+   "payment_type": "prepaid",
+   "n": 3944,
+   "success": 0.7497
+  }
+ ],
+ "byParcel": [
+  {
+   "parcel_type": "bulky",
+   "n": 1109,
+   "success": 0.706
+  },
+  {
+   "parcel_type": "documents",
+   "n": 759,
+   "success": 0.726
+  },
+  {
+   "parcel_type": "fragile",
+   "n": 877,
+   "success": 0.699
+  },
+  {
+   "parcel_type": "standard",
+   "n": 3302,
+   "success": 0.742
+  }
+ ],
+ "byPin": [
+  {
+   "has_pin": false,
+   "n": 1201,
+   "success": 0.7052
+  },
+  {
+   "has_pin": true,
+   "n": 4846,
+   "success": 0.7326
+  }
+ ],
+ "byServiceBand": [
+  {
+   "service_band": "11–20 min",
+   "n": 1931,
+   "success": 0.6789
+  },
+  {
+   "service_band": "21–30 min",
+   "n": 1672,
+   "success": 0.6597
+  },
+  {
+   "service_band": "≤10 min",
+   "n": 1848,
+   "success": 0.7754
+  }
+ ],
+ "missingPinShare": 0.1986,
+ "missingServiceTimeShare": 0.0986,
+ "noteFrequency": [
+  {
+   "note": "COD: cash must be collected",
+   "kind": "payment",
+   "n": 2103,
+   "success": 0.6847
+  },
+  {
+   "note": "Security post at the main gate",
+   "kind": "entrance",
+   "n": 748,
+   "success": 0.6939
+  },
+  {
+   "note": "ID card registration needed to enter",
+   "kind": "restriction",
+   "n": 748,
+   "success": 0.6939
+  },
+  {
+   "note": "Guarded grounds; park outside the gate",
+   "kind": "restriction",
+   "n": 717,
+   "success": 0.6876
+  },
+  {
+   "note": "Side gate for motorbikes",
+   "kind": "entrance",
+   "n": 691,
+   "success": 0.6975
+  },
+  {
+   "note": "Cars cannot enter",
+   "kind": "restriction",
+   "n": 691,
+   "success": 0.6975
+  },
+  {
+   "note": "Hand over at ground-floor reception",
+   "kind": "handover",
+   "n": 558,
+   "success": 0.7724
+  },
+  {
+   "note": "Leave at security desk and call the buyer to come down",
+   "kind": "handover",
+   "n": 558,
+   "success": 0.7778
+  },
+  {
+   "note": "Handover point: main lobby",
+   "kind": "handover",
+   "n": 512,
+   "success": 0.7773
+  },
+  {
+   "note": "Guard: parcels accepted in office hours only",
+   "kind": "window",
+   "n": 446,
+   "success": 0.4529
+  },
+  {
+   "note": "Arrived outside office hours",
+   "kind": "issue",
+   "n": 421,
+   "success": 0.4157
+  },
+  {
+   "note": "Receptionist had left",
+   "kind": "issue",
+   "n": 421,
+   "success": 0.4157
+  },
+  {
+   "note": "Recipient cannot come out in the evening",
+   "kind": "window",
+   "n": 394,
+   "success": 0.4873
+  },
+  {
+   "note": "Office lunch break 12:00–13:30",
+   "kind": "window",
+   "n": 333,
+   "success": 0.7267
+  },
+  {
+   "note": "Receives only 11:30–13:00 (lunch shift)",
+   "kind": "window",
+   "n": 293,
+   "success": 0.6997
+  },
+  {
+   "note": "Receives after 17:00 (end of work shift)",
+   "kind": "window",
+   "n": 273,
+   "success": 0.7253
+  },
+  {
+   "note": "Arrived outside the site's receiving window",
+   "kind": "issue",
+   "n": 154,
+   "success": 0.5
+  },
+  {
+   "note": "Recipient absent on arrival",
+   "kind": "issue",
+   "n": 148,
+   "success": 0.5068
+  },
+  {
+   "note": "Office closed at weekends",
+   "kind": "window",
+   "n": 87,
+   "success": 0.1839
+  },
+  {
+   "note": "No one available to receive",
+   "kind": "issue",
+   "n": 87,
+   "success": 0.1839
+  },
+  {
+   "note": "Reception closed at weekends",
+   "kind": "window",
+   "n": 77,
+   "success": 0.2338
+  },
+  {
+   "note": "Campaign day: queue at the gate",
+   "kind": "issue",
+   "n": 68,
+   "success": 0.6176
+  },
+  {
+   "note": "Reception closed",
+   "kind": "issue",
+   "n": 23,
+   "success": 0.1739
+  },
+  {
+   "note": "Guard said the recipient was absent",
+   "kind": "issue",
+   "n": 23,
+   "success": 0.1739
+  },
+  {
+   "note": "Recipient did not answer",
+   "kind": "issue",
+   "n": 19,
+   "success": 0.0526
+  },
+  {
+   "note": "Guard would not accept the parcel",
+   "kind": "issue",
+   "n": 19,
+   "success": 0.0526
+  },
+  {
+   "note": "Receives in office hours only",
+   "kind": "window",
+   "n": 17,
+   "success": 0.1176
+  },
+  {
+   "note": "Office closed",
+   "kind": "issue",
+   "n": 15,
+   "success": 0.2667
+  },
+  {
+   "note": "Retry on a weekday",
+   "kind": "issue",
+   "n": 15,
+   "success": 0.2667
+  }
+ ],
+ "definitions": {
+  "firstAttemptSuccess": "Orders delivered on their first attempt ÷ all orders (first row of each order).",
+  "redeliveryRate": "Orders with more than one attempt ÷ all orders.",
+  "returnRate": "Orders whose final status is returned ÷ all orders.",
+  "avgAttempts": "Attempt rows ÷ orders."
+ }
+}

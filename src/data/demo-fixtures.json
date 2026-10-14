@@ -1,0 +1,1915 @@
+{
+ "hub": {
+  "name": "Demo Hub",
+  "pos": [
+   -522.1,
+   -227.9
+  ]
+ },
+ "knowledge": [
+  {
+   "key": "loc-01",
+   "name": "Kim Long Trading Office",
+   "type": "office",
+   "visits": 52,
+   "firstAttemptSuccess": 0.5577,
+   "entranceCandidate": [
+    45.9,
+    -941.1
+   ],
+   "pinSpreadMeters": 249.0,
+   "pinMissingShare": 0.0769,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [],
+   "handoverNotes": [],
+   "accessNotes": [],
+   "windowNotes": [
+    {
+     "text": "Office closed at weekends",
+     "count": 7
+    },
+    {
+     "text": "Reception closed at weekends",
+     "count": 7
+    }
+   ],
+   "windowRestrictions": [
+    {
+     "text": "Office closed at weekends",
+     "count": 7,
+     "code": "closed_weekend",
+     "weekdaysOnly": true
+    },
+    {
+     "text": "Reception closed at weekends",
+     "count": 7,
+     "code": "closed_weekend",
+     "weekdaysOnly": true
+    }
+   ],
+   "pastIssues": [
+    {
+     "text": "No one available to receive",
+     "count": 7
+    },
+    {
+     "text": "Arrived outside office hours",
+     "count": 6
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 6
+    },
+    {
+     "text": "Reception closed",
+     "count": 4
+    },
+    {
+     "text": "Guard said the recipient was absent",
+     "count": 4
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 11,
+     "delivered": 11
+    },
+    "morning|weekend": {
+     "attempts": 5,
+     "delivered": 1
+    },
+    "afternoon|weekday": {
+     "attempts": 15,
+     "delivered": 11
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 0
+    },
+    "evening|weekday": {
+     "attempts": 12,
+     "delivered": 5
+    },
+    "evening|weekend": {
+     "attempts": 5,
+     "delivered": 1
+    }
+   },
+   "evidence": "52 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-02",
+   "name": "An Phu Insurance Branch",
+   "type": "office",
+   "visits": 47,
+   "firstAttemptSuccess": 0.8085,
+   "entranceCandidate": [
+    -18.3,
+    -975.0
+   ],
+   "pinSpreadMeters": 112.0,
+   "pinMissingShare": 0.2766,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [],
+   "handoverNotes": [
+    {
+     "text": "Hand over at ground-floor reception",
+     "count": 9
+    }
+   ],
+   "accessNotes": [],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 4
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 4
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 4
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 2
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 14,
+     "delivered": 13
+    },
+    "morning|weekend": {
+     "attempts": 4,
+     "delivered": 4
+    },
+    "afternoon|weekday": {
+     "attempts": 15,
+     "delivered": 15
+    },
+    "afternoon|weekend": {
+     "attempts": 2,
+     "delivered": 1
+    },
+    "evening|weekday": {
+     "attempts": 10,
+     "delivered": 4
+    },
+    "evening|weekend": {
+     "attempts": 2,
+     "delivered": 1
+    }
+   },
+   "evidence": "47 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-03",
+   "name": "Hoa Sen Vocational College",
+   "type": "school",
+   "visits": 414,
+   "firstAttemptSuccess": 0.7029,
+   "entranceCandidate": [
+    299.6,
+    -111.1
+   ],
+   "pinSpreadMeters": 240.0,
+   "pinMissingShare": 0.215,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [
+    {
+     "text": "Side gate for motorbikes",
+     "count": 63
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "Cars cannot enter",
+     "count": 63
+    }
+   ],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 37
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 37
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 21
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 16
+    },
+    {
+     "text": "Campaign day: queue at the gate",
+     "count": 12
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 124,
+     "delivered": 98
+    },
+    "morning|weekend": {
+     "attempts": 41,
+     "delivered": 31
+    },
+    "afternoon|weekday": {
+     "attempts": 85,
+     "delivered": 74
+    },
+    "afternoon|weekend": {
+     "attempts": 37,
+     "delivered": 23
+    },
+    "evening|weekday": {
+     "attempts": 95,
+     "delivered": 45
+    },
+    "evening|weekend": {
+     "attempts": 32,
+     "delivered": 20
+    }
+   },
+   "evidence": "414 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-04",
+   "name": "Song Xanh Garment Factory",
+   "type": "industrial",
+   "visits": 61,
+   "firstAttemptSuccess": 0.7705,
+   "entranceCandidate": [
+    -791.9,
+    755.1
+   ],
+   "pinSpreadMeters": 153.0,
+   "pinMissingShare": 0.0984,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [
+    {
+     "text": "Side gate for motorbikes",
+     "count": 11
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "Cars cannot enter",
+     "count": 11
+    }
+   ],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Recipient absent on arrival",
+     "count": 6
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 3
+    },
+    {
+     "text": "Campaign day: queue at the gate",
+     "count": 1
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 13,
+     "delivered": 7
+    },
+    "morning|weekend": {
+     "attempts": 5,
+     "delivered": 5
+    },
+    "afternoon|weekday": {
+     "attempts": 20,
+     "delivered": 17
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 2
+    },
+    "evening|weekday": {
+     "attempts": 14,
+     "delivered": 11
+    },
+    "evening|weekend": {
+     "attempts": 5,
+     "delivered": 5
+    }
+   },
+   "evidence": "61 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-05",
+   "name": "Phu Thinh Electronics Plant",
+   "type": "industrial",
+   "visits": 41,
+   "firstAttemptSuccess": 0.8537,
+   "entranceCandidate": [
+    -790.8,
+    634.2
+   ],
+   "pinSpreadMeters": 123.0,
+   "pinMissingShare": 0.2683,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [],
+   "handoverNotes": [],
+   "accessNotes": [],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 4
+    },
+    {
+     "text": "Campaign day: queue at the gate",
+     "count": 1
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 5,
+     "delivered": 1
+    },
+    "morning|weekend": {
+     "attempts": 1,
+     "delivered": 1
+    },
+    "afternoon|weekday": {
+     "attempts": 13,
+     "delivered": 12
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 3
+    },
+    "evening|weekday": {
+     "attempts": 12,
+     "delivered": 12
+    },
+    "evening|weekend": {
+     "attempts": 6,
+     "delivered": 6
+    }
+   },
+   "evidence": "41 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-06",
+   "name": "Tan Hiep Packaging Works",
+   "type": "industrial",
+   "visits": 60,
+   "firstAttemptSuccess": 0.7167,
+   "entranceCandidate": [
+    983.4,
+    259.9
+   ],
+   "pinSpreadMeters": 263.0,
+   "pinMissingShare": 0.2167,
+   "serviceMinutesMedian": 12.0,
+   "entranceNotes": [
+    {
+     "text": "Security post at the main gate",
+     "count": 9
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "ID card registration needed to enter",
+     "count": 9
+    }
+   ],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 8
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 4
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 9,
+     "delivered": 4
+    },
+    "morning|weekend": {
+     "attempts": 11,
+     "delivered": 3
+    },
+    "afternoon|weekday": {
+     "attempts": 20,
+     "delivered": 19
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 4
+    },
+    "evening|weekday": {
+     "attempts": 9,
+     "delivered": 7
+    },
+    "evening|weekend": {
+     "attempts": 7,
+     "delivered": 6
+    }
+   },
+   "evidence": "60 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-07",
+   "name": "Binh An Clinic (gated campus)",
+   "type": "gated_facility",
+   "visits": 44,
+   "firstAttemptSuccess": 0.8636,
+   "entranceCandidate": [
+    -392.0,
+    -294.7
+   ],
+   "pinSpreadMeters": 170.0,
+   "pinMissingShare": 0.0682,
+   "serviceMinutesMedian": 13.5,
+   "entranceNotes": [
+    {
+     "text": "Security post at the main gate",
+     "count": 8
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "ID card registration needed to enter",
+     "count": 8
+    }
+   ],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 10,
+     "delivered": 8
+    },
+    "morning|weekend": {
+     "attempts": 0,
+     "delivered": 0
+    },
+    "afternoon|weekday": {
+     "attempts": 15,
+     "delivered": 13
+    },
+    "afternoon|weekend": {
+     "attempts": 3,
+     "delivered": 3
+    },
+    "evening|weekday": {
+     "attempts": 12,
+     "delivered": 11
+    },
+    "evening|weekend": {
+     "attempts": 4,
+     "delivered": 3
+    }
+   },
+   "evidence": "44 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-08",
+   "name": "Mai Anh Primary School",
+   "type": "school",
+   "visits": 56,
+   "firstAttemptSuccess": 0.6429,
+   "entranceCandidate": [
+    -637.8,
+    890.9
+   ],
+   "pinSpreadMeters": 101.0,
+   "pinMissingShare": 0.25,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [],
+   "handoverNotes": [],
+   "accessNotes": [],
+   "windowNotes": [],
+   "windowRestrictions": [],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 5
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 5
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 4
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 4
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 14,
+     "delivered": 13
+    },
+    "morning|weekend": {
+     "attempts": 5,
+     "delivered": 3
+    },
+    "afternoon|weekday": {
+     "attempts": 12,
+     "delivered": 7
+    },
+    "afternoon|weekend": {
+     "attempts": 8,
+     "delivered": 5
+    },
+    "evening|weekday": {
+     "attempts": 10,
+     "delivered": 4
+    },
+    "evening|weekend": {
+     "attempts": 7,
+     "delivered": 4
+    }
+   },
+   "evidence": "56 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-09",
+   "name": "Truc Lam Secondary School",
+   "type": "school",
+   "visits": 56,
+   "firstAttemptSuccess": 0.7321,
+   "entranceCandidate": [
+    -53.2,
+    -301.7
+   ],
+   "pinSpreadMeters": 157.0,
+   "pinMissingShare": 0.1964,
+   "serviceMinutesMedian": 18.0,
+   "entranceNotes": [
+    {
+     "text": "Side gate for motorbikes",
+     "count": 12
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "Cars cannot enter",
+     "count": 12
+    }
+   ],
+   "windowNotes": [
+    {
+     "text": "Guard: parcels accepted in office hours only",
+     "count": 10
+    }
+   ],
+   "windowRestrictions": [
+    {
+     "text": "Guard: parcels accepted in office hours only",
+     "count": 10,
+     "code": "office_hours",
+     "blocks": [
+      "morning",
+      "afternoon"
+     ]
+    }
+   ],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 10
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 10
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 3
+    },
+    {
+     "text": "Campaign day: queue at the gate",
+     "count": 2
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 1
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 9,
+     "delivered": 9
+    },
+    "morning|weekend": {
+     "attempts": 6,
+     "delivered": 5
+    },
+    "afternoon|weekday": {
+     "attempts": 10,
+     "delivered": 9
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 4
+    },
+    "evening|weekday": {
+     "attempts": 24,
+     "delivered": 12
+    },
+    "evening|weekend": {
+     "attempts": 3,
+     "delivered": 2
+    }
+   },
+   "evidence": "56 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-10",
+   "name": "Ngoc Lan Kindergarten",
+   "type": "school",
+   "visits": 66,
+   "firstAttemptSuccess": 0.6212,
+   "entranceCandidate": [
+    -600.9,
+    726.3
+   ],
+   "pinSpreadMeters": 228.0,
+   "pinMissingShare": 0.1515,
+   "serviceMinutesMedian": 15.0,
+   "entranceNotes": [
+    {
+     "text": "Side gate for motorbikes",
+     "count": 10
+    },
+    {
+     "text": "Security post at the main gate",
+     "count": 10
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "Cars cannot enter",
+     "count": 10
+    },
+    {
+     "text": "ID card registration needed to enter",
+     "count": 10
+    }
+   ],
+   "windowNotes": [
+    {
+     "text": "Recipient cannot come out in the evening",
+     "count": 12
+    }
+   ],
+   "windowRestrictions": [
+    {
+     "text": "Recipient cannot come out in the evening",
+     "count": 12,
+     "code": "no_evening",
+     "blocks": [
+      "morning",
+      "afternoon"
+     ]
+    }
+   ],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 7
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 7
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 2
+    },
+    {
+     "text": "Campaign day: queue at the gate",
+     "count": 1
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 1
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 16,
+     "delivered": 12
+    },
+    "morning|weekend": {
+     "attempts": 8,
+     "delivered": 7
+    },
+    "afternoon|weekday": {
+     "attempts": 15,
+     "delivered": 13
+    },
+    "afternoon|weekend": {
+     "attempts": 3,
+     "delivered": 2
+    },
+    "evening|weekday": {
+     "attempts": 18,
+     "delivered": 6
+    },
+    "evening|weekend": {
+     "attempts": 6,
+     "delivered": 1
+    }
+   },
+   "evidence": "66 dataset visits, 1–30 Sep 2026"
+  },
+  {
+   "key": "loc-11",
+   "name": "Thanh Tam High School",
+   "type": "school",
+   "visits": 51,
+   "firstAttemptSuccess": 0.6667,
+   "entranceCandidate": [
+    62.7,
+    -399.9
+   ],
+   "pinSpreadMeters": 273.0,
+   "pinMissingShare": 0.0392,
+   "serviceMinutesMedian": 18.0,
+   "entranceNotes": [
+    {
+     "text": "Side gate for motorbikes",
+     "count": 13
+    },
+    {
+     "text": "Security post at the main gate",
+     "count": 8
+    }
+   ],
+   "handoverNotes": [],
+   "accessNotes": [
+    {
+     "text": "Cars cannot enter",
+     "count": 13
+    },
+    {
+     "text": "Guarded grounds; park outside the gate",
+     "count": 8
+    },
+    {
+     "text": "ID card registration needed to enter",
+     "count": 8
+    }
+   ],
+   "windowNotes": [
+    {
+     "text": "Guard: parcels accepted in office hours only",
+     "count": 12
+    }
+   ],
+   "windowRestrictions": [
+    {
+     "text": "Guard: parcels accepted in office hours only",
+     "count": 12,
+     "code": "office_hours",
+     "blocks": [
+      "morning",
+      "afternoon"
+     ]
+    }
+   ],
+   "pastIssues": [
+    {
+     "text": "Arrived outside office hours",
+     "count": 4
+    },
+    {
+     "text": "Receptionist had left",
+     "count": 4
+    },
+    {
+     "text": "Recipient absent on arrival",
+     "count": 3
+    },
+    {
+     "text": "Arrived outside the site's receiving window",
+     "count": 1
+    }
+   ],
+   "windowHistory": {
+    "morning|weekday": {
+     "attempts": 12,
+     "delivered": 11
+    },
+    "morning|weekend": {
+     "attempts": 9,
+     "delivered": 8
+    },
+    "afternoon|weekday": {
+     "attempts": 7,
+     "delivered": 7
+    },
+    "afternoon|weekend": {
+     "attempts": 4,
+     "delivered": 1
+    },
+    "evening|weekday": {
+     "attempts": 15,
+     "delivered": 6
+    },
+    "evening|weekend": {
+     "attempts": 4,
+     "delivered": 1
+    }
+   },
+   "evidence": "51 dataset visits, 1–30 Sep 2026"
+  }
+ ],
+ "shifts": [
+  {
+   "id": "shift-wed",
+   "date": "2026-10-14",
+   "weekday": "Wednesday",
+   "isWeekend": false,
+   "zoneLabel": "Demo zone (one dataset rider area, de-identified)",
+   "stops": [
+    {
+     "id": "WED-01",
+     "receivedOrder": 1,
+     "buyer": "Tran Thanh Tam",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": null,
+     "serviceMinutes": 5.0,
+     "isReattempt": true
+    },
+    {
+     "id": "WED-02",
+     "receivedOrder": 2,
+     "buyer": "Do Thi Khanh",
+     "locationKey": "loc-04",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -976.6,
+      785.2
+     ],
+     "serviceMinutes": 7.0,
+     "isReattempt": true
+    },
+    {
+     "id": "WED-03",
+     "receivedOrder": 3,
+     "buyer": "Ho Quoc Thao",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      392.7,
+      -103.1
+     ],
+     "serviceMinutes": 25.0,
+     "isReattempt": true
+    },
+    {
+     "id": "WED-04",
+     "receivedOrder": 4,
+     "buyer": "Dang Quoc Thao",
+     "locationKey": "loc-09",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      38.3,
+      -353.5
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": true
+    },
+    {
+     "id": "WED-05",
+     "receivedOrder": 5,
+     "buyer": "Duong Bao Hanh",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      292.4,
+      -43.1
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": true
+    },
+    {
+     "id": "WED-06",
+     "receivedOrder": 6,
+     "buyer": "Ly Quoc Phuc",
+     "locationKey": "loc-04",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": [
+      -731.2,
+      806.7
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-07",
+     "receivedOrder": 7,
+     "buyer": "Pham Van Tuan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      483.3,
+      -122.0
+     ],
+     "serviceMinutes": 7.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-08",
+     "receivedOrder": 8,
+     "buyer": "Tran Thi Linh",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      64.7,
+      -211.8
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-09",
+     "receivedOrder": 9,
+     "buyer": "Tran Bao An",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": null,
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-10",
+     "receivedOrder": 10,
+     "buyer": "Ngo Bao Vy",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      447.0,
+      -87.8
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-11",
+     "receivedOrder": 11,
+     "buyer": "Vu Ngoc Nam",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      19.8,
+      -475.7
+     ],
+     "serviceMinutes": 25.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-12",
+     "receivedOrder": 12,
+     "buyer": "Hoang Thanh Mai",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 12.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-13",
+     "receivedOrder": 13,
+     "buyer": "Ly Duc Khoa",
+     "locationKey": "loc-09",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": [
+      -226.8,
+      -373.2
+     ],
+     "serviceMinutes": 5.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-14",
+     "receivedOrder": 14,
+     "buyer": "Do Thi Khoa",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      467.9,
+      -78.7
+     ],
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-15",
+     "receivedOrder": 15,
+     "buyer": "Vu Thi Thao",
+     "locationKey": "loc-04",
+     "locationType": "industrial",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      -1002.4,
+      801.8
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-16",
+     "receivedOrder": 16,
+     "buyer": "Do Gia Linh",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-17",
+     "receivedOrder": 17,
+     "buyer": "Bui Minh Uyen",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -380.9,
+      -425.3
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-18",
+     "receivedOrder": 18,
+     "buyer": "Duong Quoc Linh",
+     "locationKey": "loc-10",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -731.4,
+      994.0
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-19",
+     "receivedOrder": 19,
+     "buyer": "Nguyen Thanh Mai",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "fragile",
+     "pin": [
+      443.5,
+      -202.4
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-20",
+     "receivedOrder": 20,
+     "buyer": "Bui Duc Chi",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      373.7,
+      -130.4
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-21",
+     "receivedOrder": 21,
+     "buyer": "Bui Thi Nhi",
+     "locationKey": "loc-01",
+     "locationType": "office",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      181.0,
+      -1006.7
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-22",
+     "receivedOrder": 22,
+     "buyer": "Do Quoc Quan",
+     "locationKey": "loc-08",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      -707.4,
+      932.0
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-23",
+     "receivedOrder": 23,
+     "buyer": "Dang Kim Lan",
+     "locationKey": "loc-08",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "fragile",
+     "pin": [
+      -573.0,
+      964.4
+     ],
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-24",
+     "receivedOrder": 24,
+     "buyer": "Dang Quoc Quan",
+     "locationKey": "loc-10",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": null,
+     "serviceMinutes": 12.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-25",
+     "receivedOrder": 25,
+     "buyer": "Do Kim Son",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": [
+      25.8,
+      -362.9
+     ],
+     "serviceMinutes": 22.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-26",
+     "receivedOrder": 26,
+     "buyer": "Nguyen Quoc Khanh",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      -522.1,
+      -353.3
+     ],
+     "serviceMinutes": 5.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-27",
+     "receivedOrder": 27,
+     "buyer": "Ly Minh Binh",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 25.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-28",
+     "receivedOrder": 28,
+     "buyer": "Duong Kim Vy",
+     "locationKey": "loc-01",
+     "locationType": "office",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": null,
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-29",
+     "receivedOrder": 29,
+     "buyer": "Tran Quoc Nhi",
+     "locationKey": "loc-04",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      -880.1,
+      767.4
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-30",
+     "receivedOrder": 30,
+     "buyer": "Bui Minh Quan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": [
+      444.1,
+      -173.2
+     ],
+     "serviceMinutes": 22.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-31",
+     "receivedOrder": 31,
+     "buyer": "Pham Thi Uyen",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      471.3,
+      -196.5
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-32",
+     "receivedOrder": 32,
+     "buyer": "Duong Bao Vy",
+     "locationKey": "loc-10",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -527.7,
+      778.9
+     ],
+     "serviceMinutes": 12.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-33",
+     "receivedOrder": 33,
+     "buyer": "Bui Kim Lan",
+     "locationKey": "loc-05",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": [
+      -884.9,
+      696.5
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-34",
+     "receivedOrder": 34,
+     "buyer": "Do Duc Vy",
+     "locationKey": "loc-01",
+     "locationType": "office",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -604.7,
+      904.5
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-35",
+     "receivedOrder": 35,
+     "buyer": "Hoang Kim Son",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      335.4,
+      -107.0
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-36",
+     "receivedOrder": 36,
+     "buyer": "Ngo Kim Yen",
+     "locationKey": "loc-06",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": null,
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "WED-37",
+     "receivedOrder": 37,
+     "buyer": "Bui Duc Nhi",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": [
+      -634.7,
+      797.2
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    }
+   ],
+   "actualDatasetOutcome": {
+    "attempts": 37,
+    "delivered": 29,
+    "byWindow": {
+     "morning": {
+      "attempts": 9,
+      "delivered": 8
+     },
+     "afternoon": {
+      "attempts": 16,
+      "delivered": 14
+     },
+     "evening": {
+      "attempts": 12,
+      "delivered": 7
+     }
+    }
+   }
+  },
+  {
+   "id": "shift-sat",
+   "date": "2026-10-10",
+   "weekday": "Saturday",
+   "isWeekend": true,
+   "zoneLabel": "Demo zone (one dataset rider area, de-identified)",
+   "stops": [
+    {
+     "id": "SAT-01",
+     "receivedOrder": 1,
+     "buyer": "Pham Gia Lan",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      1083.3,
+      312.1
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-02",
+     "receivedOrder": 2,
+     "buyer": "Nguyen Van Giang",
+     "locationKey": "loc-01",
+     "locationType": "office",
+     "payment": "cod",
+     "parcel": "fragile",
+     "pin": [
+      29.1,
+      -954.9
+     ],
+     "serviceMinutes": 12.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-03",
+     "receivedOrder": 3,
+     "buyer": "Ngo Quoc Phuc",
+     "locationKey": "loc-05",
+     "locationType": "industrial",
+     "payment": "cod",
+     "parcel": "fragile",
+     "pin": null,
+     "serviceMinutes": 5.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-04",
+     "receivedOrder": 4,
+     "buyer": "Ly Kim Quan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "documents",
+     "pin": null,
+     "serviceMinutes": 5.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-05",
+     "receivedOrder": 5,
+     "buyer": "Vu Ngoc Lan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "bulky",
+     "pin": [
+      373.7,
+      -130.4
+     ],
+     "serviceMinutes": null,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-06",
+     "receivedOrder": 6,
+     "buyer": "Duong Bao Phuc",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "documents",
+     "pin": null,
+     "serviceMinutes": 7.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-07",
+     "receivedOrder": 7,
+     "buyer": "Do Bao Son",
+     "locationKey": "loc-06",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 8.0,
+     "isReattempt": true
+    },
+    {
+     "id": "SAT-08",
+     "receivedOrder": 8,
+     "buyer": "Dang Kim Vy",
+     "locationKey": "loc-08",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "bulky",
+     "pin": [
+      -39.2,
+      -960.8
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-09",
+     "receivedOrder": 9,
+     "buyer": "Nguyen Gia Long",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "documents",
+     "pin": [
+      -421.3,
+      -361.1
+     ],
+     "serviceMinutes": null,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-10",
+     "receivedOrder": 10,
+     "buyer": "Bui Thi Phuc",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      373.7,
+      -130.4
+     ],
+     "serviceMinutes": 22.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-11",
+     "receivedOrder": 11,
+     "buyer": "Duong Kim Lan",
+     "locationKey": "loc-05",
+     "locationType": "industrial",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      -643.9,
+      597.9
+     ],
+     "serviceMinutes": 25.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-12",
+     "receivedOrder": 12,
+     "buyer": "Bui Minh Nhi",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      415.5,
+      0.1
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-13",
+     "receivedOrder": 13,
+     "buyer": "Duong Bao Chi",
+     "locationKey": "loc-02",
+     "locationType": "office",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": [
+      -124.0,
+      -909.8
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-14",
+     "receivedOrder": 14,
+     "buyer": "Ngo Gia Quan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 25.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-15",
+     "receivedOrder": 15,
+     "buyer": "Vu Thi Hieu",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      317.5,
+      -54.5
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-16",
+     "receivedOrder": 16,
+     "buyer": "Duong Duc Giang",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      397.9,
+      -261.3
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-17",
+     "receivedOrder": 17,
+     "buyer": "Bui Van Chi",
+     "locationKey": "loc-02",
+     "locationType": "office",
+     "payment": "prepaid",
+     "parcel": "fragile",
+     "pin": null,
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-18",
+     "receivedOrder": 18,
+     "buyer": "Nguyen Bao Trang",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": [
+      -470.0,
+      -181.4
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-19",
+     "receivedOrder": 19,
+     "buyer": "Do Thi Tuan",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      404.5,
+      -347.0
+     ],
+     "serviceMinutes": 22.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-20",
+     "receivedOrder": 20,
+     "buyer": "Ly Ngoc Khanh",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      62.6,
+      -552.3
+     ],
+     "serviceMinutes": 10.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-21",
+     "receivedOrder": 21,
+     "buyer": "Tran Quoc Binh",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      54.5,
+      -302.4
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-22",
+     "receivedOrder": 22,
+     "buyer": "Ly Kim Lan",
+     "locationKey": "loc-09",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      19.9,
+      -369.0
+     ],
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-23",
+     "receivedOrder": 23,
+     "buyer": "Ngo Thanh Giang",
+     "locationKey": "loc-11",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "bulky",
+     "pin": [
+      14.1,
+      -425.7
+     ],
+     "serviceMinutes": 18.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-24",
+     "receivedOrder": 24,
+     "buyer": "Nguyen Thanh Vy",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      407.8,
+      -153.3
+     ],
+     "serviceMinutes": 25.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-25",
+     "receivedOrder": 25,
+     "buyer": "Ho Quoc Hanh",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -388.2,
+      -412.9
+     ],
+     "serviceMinutes": 22.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-26",
+     "receivedOrder": 26,
+     "buyer": "Bui Minh Thao",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-27",
+     "receivedOrder": 27,
+     "buyer": "Pham Bao Trang",
+     "locationKey": "loc-04",
+     "locationType": "industrial",
+     "payment": "prepaid",
+     "parcel": "documents",
+     "pin": [
+      29.3,
+      -982.3
+     ],
+     "serviceMinutes": 7.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-28",
+     "receivedOrder": 28,
+     "buyer": "Le Quoc Yen",
+     "locationKey": "loc-10",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "standard",
+     "pin": [
+      -660.8,
+      654.7
+     ],
+     "serviceMinutes": 12.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-29",
+     "receivedOrder": 29,
+     "buyer": "Do Gia Chi",
+     "locationKey": "loc-07",
+     "locationType": "gated_facility",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": null,
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-30",
+     "receivedOrder": 30,
+     "buyer": "Dang Minh Giang",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      588.6,
+      -211.6
+     ],
+     "serviceMinutes": 8.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-31",
+     "receivedOrder": 31,
+     "buyer": "Ly Quoc Linh",
+     "locationKey": "loc-09",
+     "locationType": "school",
+     "payment": "prepaid",
+     "parcel": "standard",
+     "pin": [
+      -98.8,
+      -328.0
+     ],
+     "serviceMinutes": 30.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-32",
+     "receivedOrder": 32,
+     "buyer": "Do Duc Nam",
+     "locationKey": "loc-08",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "bulky",
+     "pin": [
+      -604.7,
+      904.5
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    },
+    {
+     "id": "SAT-33",
+     "receivedOrder": 33,
+     "buyer": "Ly Minh Tam",
+     "locationKey": "loc-03",
+     "locationType": "school",
+     "payment": "cod",
+     "parcel": "fragile",
+     "pin": [
+      310.4,
+      -174.1
+     ],
+     "serviceMinutes": 15.0,
+     "isReattempt": false
+    }
+   ],
+   "actualDatasetOutcome": {
+    "attempts": 33,
+    "delivered": 22,
+    "byWindow": {
+     "morning": {
+      "attempts": 14,
+      "delivered": 11
+     },
+     "afternoon": {
+      "attempts": 11,
+      "delivered": 7
+     },
+     "evening": {
+      "attempts": 8,
+      "delivered": 4
+     }
+    }
+   }
+  }
+ ],
+ "note": "De-identified demo fixtures generated from the Strategy dataset. Names are fictional; positions are rotated local metres."
+}

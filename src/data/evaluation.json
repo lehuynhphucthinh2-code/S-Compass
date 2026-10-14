@@ -1,0 +1,103 @@
+{
+ "split": {
+  "train": "2026-09-01 to 2026-09-30",
+  "holdout": "2026-10-01 to 2026-10-15",
+  "nTrain": 5494,
+  "nHoldout": 2565,
+  "trainSuccess": 0.7197,
+  "holdoutSuccess": 0.7485
+ },
+ "scores": {
+  "baseRate": {
+   "auc": 0.5,
+   "brier": 0.1891,
+   "log_loss": 0.566
+  },
+  "historyTable": {
+   "auc": 0.723,
+   "brier": 0.1584,
+   "log_loss": 0.4909
+  },
+  "model": {
+   "auc": 0.7114,
+   "brier": 0.1625,
+   "log_loss": 0.5019
+  }
+ },
+ "calibration": [
+  {
+   "mean_predicted": 0.4067,
+   "observed": 0.4542,
+   "n": 513
+  },
+  {
+   "mean_predicted": 0.699,
+   "observed": 0.7271,
+   "n": 513
+  },
+  {
+   "mean_predicted": 0.8009,
+   "observed": 0.8421,
+   "n": 513
+  },
+  {
+   "mean_predicted": 0.8441,
+   "observed": 0.8421,
+   "n": 513
+  },
+  {
+   "mean_predicted": 0.892,
+   "observed": 0.8772,
+   "n": 513
+  }
+ ],
+ "byType": [
+  {
+   "location_type": "school",
+   "n": 1222,
+   "observed": 0.6956,
+   "mean_predicted": 0.6864,
+   "auc": 0.7021
+  },
+  {
+   "location_type": "office",
+   "n": 350,
+   "observed": 0.6429,
+   "mean_predicted": 0.5975,
+   "auc": 0.7908
+  },
+  {
+   "location_type": "industrial",
+   "n": 68,
+   "observed": 0.8529,
+   "mean_predicted": 0.7846,
+   "auc": 0.6345
+  },
+  {
+   "location_type": "gated_facility",
+   "n": 925,
+   "observed": 0.8508,
+   "mean_predicted": 0.8298,
+   "auc": 0.5327
+  }
+ ],
+ "windowCheck": {
+  "model_win": {
+   "match_n": 910,
+   "match_success": 0.8242,
+   "other_n": 1655,
+   "other_success": 0.7069
+  },
+  "rules_win": {
+   "match_n": 865,
+   "match_success": 0.8382,
+   "other_n": 1700,
+   "other_success": 0.7029
+  }
+ },
+ "gradientBoosting": {
+  "auc": 0.7289,
+  "brier": 0.1613,
+  "log_loss": 0.4977
+ }
+}

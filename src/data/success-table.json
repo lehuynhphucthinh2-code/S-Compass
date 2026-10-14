@@ -1,0 +1,199 @@
+{
+ "prior": 0.7197,
+ "priorStrength": 5.0,
+ "trainedOn": "attempts 2026-09-01 to 2026-09-30",
+ "cells": {
+  "gated_facility|afternoon|weekday|cod": {
+   "p": 0.8456,
+   "n": 166
+  },
+  "gated_facility|afternoon|weekday|prepaid": {
+   "p": 0.874,
+   "n": 284
+  },
+  "gated_facility|afternoon|weekend|cod": {
+   "p": 0.7927,
+   "n": 50
+  },
+  "gated_facility|afternoon|weekend|prepaid": {
+   "p": 0.8874,
+   "n": 114
+  },
+  "gated_facility|evening|weekday|cod": {
+   "p": 0.7748,
+   "n": 170
+  },
+  "gated_facility|evening|weekday|prepaid": {
+   "p": 0.8744,
+   "n": 261
+  },
+  "gated_facility|evening|weekend|cod": {
+   "p": 0.6507,
+   "n": 62
+  },
+  "gated_facility|evening|weekend|prepaid": {
+   "p": 0.7918,
+   "n": 93
+  },
+  "gated_facility|morning|weekday|cod": {
+   "p": 0.7436,
+   "n": 176
+  },
+  "gated_facility|morning|weekday|prepaid": {
+   "p": 0.8404,
+   "n": 292
+  },
+  "gated_facility|morning|weekend|cod": {
+   "p": 0.6827,
+   "n": 53
+  },
+  "gated_facility|morning|weekend|prepaid": {
+   "p": 0.8882,
+   "n": 97
+  },
+  "industrial|afternoon|weekday|cod": {
+   "p": 0.8583,
+   "n": 19
+  },
+  "industrial|afternoon|weekday|prepaid": {
+   "p": 0.8871,
+   "n": 34
+  },
+  "industrial|afternoon|weekend|cod": {
+   "p": 0.6598,
+   "n": 5
+  },
+  "industrial|afternoon|weekend|prepaid": {
+   "p": 0.7999,
+   "n": 7
+  },
+  "industrial|evening|weekday|cod": {
+   "p": 0.7799,
+   "n": 15
+  },
+  "industrial|evening|weekday|prepaid": {
+   "p": 0.8639,
+   "n": 20
+  },
+  "industrial|evening|weekend|cod": {
+   "p": 0.7664,
+   "n": 1
+  },
+  "industrial|evening|weekend|prepaid": {
+   "p": 0.8908,
+   "n": 17
+  },
+  "industrial|morning|weekday|cod": {
+   "p": 0.5646,
+   "n": 12
+  },
+  "industrial|morning|weekday|prepaid": {
+   "p": 0.4799,
+   "n": 15
+  },
+  "industrial|morning|weekend|cod": {
+   "p": 0.6142,
+   "n": 9
+  },
+  "industrial|morning|weekend|prepaid": {
+   "p": 0.5845,
+   "n": 8
+  },
+  "office|afternoon|weekday|cod": {
+   "p": 0.7403,
+   "n": 62
+  },
+  "office|afternoon|weekday|prepaid": {
+   "p": 0.8829,
+   "n": 118
+  },
+  "office|afternoon|weekend|cod": {
+   "p": 0.3039,
+   "n": 20
+  },
+  "office|afternoon|weekend|prepaid": {
+   "p": 0.2718,
+   "n": 34
+  },
+  "office|evening|weekday|cod": {
+   "p": 0.4877,
+   "n": 68
+  },
+  "office|evening|weekday|prepaid": {
+   "p": 0.4256,
+   "n": 128
+  },
+  "office|evening|weekend|cod": {
+   "p": 0.3166,
+   "n": 19
+  },
+  "office|evening|weekend|prepaid": {
+   "p": 0.2644,
+   "n": 54
+  },
+  "office|morning|weekday|cod": {
+   "p": 0.8136,
+   "n": 83
+  },
+  "office|morning|weekday|prepaid": {
+   "p": 0.8698,
+   "n": 167
+  },
+  "office|morning|weekend|cod": {
+   "p": 0.2457,
+   "n": 30
+  },
+  "office|morning|weekend|prepaid": {
+   "p": 0.2695,
+   "n": 64
+  },
+  "school|afternoon|weekday|cod": {
+   "p": 0.7723,
+   "n": 212
+  },
+  "school|afternoon|weekday|prepaid": {
+   "p": 0.8686,
+   "n": 371
+  },
+  "school|afternoon|weekend|cod": {
+   "p": 0.4092,
+   "n": 82
+  },
+  "school|afternoon|weekend|prepaid": {
+   "p": 0.5421,
+   "n": 140
+  },
+  "school|evening|weekday|cod": {
+   "p": 0.4287,
+   "n": 218
+  },
+  "school|evening|weekday|prepaid": {
+   "p": 0.4315,
+   "n": 395
+  },
+  "school|evening|weekend|cod": {
+   "p": 0.4901,
+   "n": 86
+  },
+  "school|evening|weekend|prepaid": {
+   "p": 0.4844,
+   "n": 149
+  },
+  "school|morning|weekday|cod": {
+   "p": 0.8139,
+   "n": 282
+  },
+  "school|morning|weekday|prepaid": {
+   "p": 0.8593,
+   "n": 474
+  },
+  "school|morning|weekend|cod": {
+   "p": 0.8438,
+   "n": 100
+  },
+  "school|morning|weekend|prepaid": {
+   "p": 0.8503,
+   "n": 158
+  }
+ }
+}

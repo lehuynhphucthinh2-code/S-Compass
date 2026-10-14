@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Surfaces and ink */
+  --color-canvas: #f2f4f7;
+  --color-surface: #ffffff;
+  --color-line: #e1e5ec;
+  --color-ink: #14213d;
+  --color-ink-soft: #4a5672;
+  --color-ink-faint: #6b7590;
+
+  /* Brand (Shopee-inspired orange; darker tone for small text on white) */
+  --color-brand: #ee4d2d;
+  --color-brand-ink: #c2381d;
+  --color-brand-tint: #fdeee9;
+
+  /* States */
+  --color-ok: #1e8e5a;
+  --color-ok-tint: #e5f5ec;
+  --color-warn: #a66300;
+  --color-warn-tint: #fdf2dc;
+  --color-bad: #b42318;
+  --color-bad-tint: #fdecea;
+  --color-info: #2f5d9e;
+  --color-info-tint: #e8eef8;
+
+  /* Delivery blocks */
+  --color-morning: #3d7cc9;
+  --color-afternoon: #d18a12;
+  --color-evening: #4b3f8f;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
