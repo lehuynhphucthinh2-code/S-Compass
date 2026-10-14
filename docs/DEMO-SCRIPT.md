@@ -5,7 +5,7 @@ Record on the deployed link (the same one you submit). Before recording: press *
 | Time | Screen | Do | Say (simple English) |
 |---|---|---|---|
 | 0:00–0:12 | Dispatcher | Show the header and the three panels | "S-Compass helps new riders use the know-how of veterans. Every number on this page says where it comes from: dataset, simulated or live." |
-| 0:12–0:30 | Dispatcher | Point at Dataset history, then Generate plan with **Baseline** | "In the dataset, first-attempt success is 72.7%. Schools and offices fail most in the evening. Today's app just follows the nearest pin — 7 stops land in low-chance blocks." |
+| 0:12–0:30 | Dispatcher | Keep **Rider A · Minh**, Wednesday shift. Point at Dataset history, then Generate plan with **Baseline** | "In the dataset, first-attempt success is 72.7%. Schools and offices fail most in the evening. Today's app just follows the nearest pin — 7 stops land in low-chance blocks." |
 | 0:30–0:45 | Dispatcher | Compare plans → Use rules → Dispatch to rider | "Input: 37 loaded parcels and stop cards. Processing: the rules planner picks each stop's best block from the history table and checks time capacity. Output: expected successful first attempts rise from 28.2 to 30.5 — a simulated estimate." |
 | 0:45–1:05 | Rider (phone) | Next stop, Why this stop now, Open stop card | "The rider sees the next stop, why it is next, the suggested entrance and handover. A dataset pin is not a verified entrance — the card shows how far the pins for this site spread." |
 | 1:05–1:20 | Rider → Stop cards | Suggest correction (receiving window) → switch role to Dispatcher → Approve | "The rider sends a correction. Only after the dispatcher approves does the card become verified and change the next plan." |
@@ -13,7 +13,7 @@ Record on the deployed link (the same one you submit). Before recording: press *
 | 1:38–1:50 | Replanning | Show previous vs proposed sequence → Accept new plan | "Live replanning shows what changed, why, and which commitments are affected. Completed stops stay fixed; moving a parcel to another rider needs an explicit action." |
 | 1:50–2:00 | Evidence | Show metrics and Export CSV | "Every interaction is logged with tester and persona and can be exported as test evidence." |
 
-Optional if time allows: the How it works page verdict — "On this data, our learned model did not beat the simple rules table, so the prototype runs on rules; the pilot tests AI against rules."
+Optional if time allows: switch the Rider box to another zone to show the planner works on all 6 dataset zones. Or show the How it works page verdict — "On this data, our learned model did not beat the simple rules table, so the prototype runs on rules; the pilot tests AI against rules."
 
 ## Test sessions with peers or mock personas
 

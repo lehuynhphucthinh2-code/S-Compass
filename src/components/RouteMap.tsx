@@ -2,35 +2,61 @@
 
 import * as React from "react";
 import { blockColor } from "@/components/bits";
-import { fixtures, pickupPoints } from "@/lib/data";
+import { fixtures, knowledgeForRider, riderById } from "@/lib/data";
 import type { Plan, Point, StopState } from "@/lib/types";
 
-/** Bounding box of every position in the demo zone (so the map does not jump between plans). */
-const ALL: Point[] = [
-  fixtures.hub.pos,
-  ...pickupPoints.map((p) => p.pos),
-  ...fixtures.knowledge.flatMap((k) => (k.entranceCandidate ? [k.entranceCandidate] : [])),
-  ...fixtures.shifts.flatMap((s) => s.stops.flatMap((x) => (x.pin ? [x.pin] : []))),
-];
+/** Bounding box of every position in one rider's zone (so the map does not jump between plans). */
 const PAD = 120;
-const minX = Math.min(...ALL.map((p) => p[0])) - PAD;
-const maxX = Math.max(...ALL.map((p) => p[0])) + PAD;
-const minY = Math.min(...ALL.map((p) => p[1])) - PAD;
-const maxY = Math.max(...ALL.map((p) => p[1])) + PAD;
+const boundsCache = new Map<string, { minX: number; maxX: number; minY: number; maxY: number }>();
+function zoneBounds(riderId: string) {
+  const hit = boundsCache.get(riderId);
+  if (hit) return hit;
+  const rider = riderById(riderId);
+  const all: Point[] = [
+    rider.hub.pos,
+    ...rider.pickupPoints.map((p) => p.pos),
+    ...knowledgeForRider(riderId).flatMap((k) => (k.entranceCandidate ? [k.entranceCandidate] : [])),
+    ...fixtures.shifts.filter((s) => s.riderId === riderId).flatMap((s) => s.stops.flatMap((x) => (x.pin ? [x.pin] : []))),
+  ];
+  const b = {
+    minX: Math.min(...all.map((p) => p[0])) - PAD,
+    maxX: Math.max(...all.map((p) => p[0])) + PAD,
+    minY: Math.min(...all.map((p) => p[1])) - PAD,
+    maxY: Math.max(...all.map((p) => p[1])) + PAD,
+  };
+  // keep a readable aspect ratio (height/width between 0.5 and 0.85) by widening the short side
+  const dx = b.maxX - b.minX;
+  const dy = b.maxY - b.minY;
+  if (dy / dx > 0.85) {
+    const extra = (dy / 0.85 - dx) / 2;
+    b.minX -= extra;
+    b.maxX += extra;
+  } else if (dy / dx < 0.5) {
+    const extra = (dx * 0.5 - dy) / 2;
+    b.minY -= extra;
+    b.maxY += extra;
+  }
+  boundsCache.set(riderId, b);
+  return b;
+}
 
 export function RouteMap({
+  riderId,
   plan,
   states,
   selected,
   onSelect,
   height = 340,
 }: {
+  riderId: string;
   plan: Plan | null;
   states: Record<string, StopState>;
   selected?: string | null;
   onSelect?: (stopId: string) => void;
   height?: number;
 }) {
+  const { minX, maxX, minY, maxY } = zoneBounds(riderId);
+  const rider = riderById(riderId);
   const W = 1000;
   const H = Math.round((W * (maxY - minY)) / (maxX - minX));
   const tx = (p: Point) => [((p[0] - minX) / (maxX - minX)) * W, H - ((p[1] - minY) / (maxY - minY)) * H] as const;
@@ -46,14 +72,14 @@ export function RouteMap({
   }
 
   const segments: { a: readonly [number, number]; b: readonly [number, number]; color: string; done: boolean }[] = [];
-  let prev = tx(fixtures.hub.pos);
+  let prev = tx(rider.hub.pos);
   for (const s of located) {
     const cur = tx(s.point!);
     const st = states[s.stopId]?.status;
     segments.push({ a: prev, b: cur, color: blockColor(s.block), done: st === "delivered" || st === "failed" });
     prev = cur;
   }
-  const hub = tx(fixtures.hub.pos);
+  const hub = tx(rider.hub.pos);
 
   return (
     <figure className="m-0">
@@ -64,7 +90,7 @@ export function RouteMap({
           </pattern>
         </defs>
         <rect width={W} height={H} fill="url(#grid)" />
-        {pickupPoints.map((p) => {
+        {rider.pickupPoints.map((p) => {
           const [x, y] = tx(p.pos);
           return (
             <g key={p.id}>

@@ -29,7 +29,9 @@ from features import LOC_TYPES, WINDOWS, feature_names  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "data"
 DEMO_RIDER = "R06"
-SHIFTS = [("2026-10-14", "shift-wed"), ("2026-10-10", "shift-sat")]
+# Order matters: R06 first keeps the original demo zone (Rider A) and buyer names unchanged.
+RIDERS = [("R06", "A", "Minh"), ("R01", "B", "An"), ("R02", "C", "Bao"), ("R03", "D", "Chi"), ("R04", "E", "Duy"), ("R05", "F", "Giang")]
+SHIFT_DATES = [("2026-10-14", "weekday"), ("2026-10-10", "weekend")]
 KNOWLEDGE_CUTOFF = te.SPLIT  # knowledge cards use visits before 1 Oct 2026
 TABLE_PRIOR = 5.0
 
@@ -123,6 +125,19 @@ LOCATION_NAMES = {
     "industrial": ["Song Xanh Garment Factory", "Phu Thinh Electronics Plant", "Tan Hiep Packaging Works"],
     "gated_facility": ["Binh An Clinic (gated campus)"],
 }
+PLACE_WORDS = ["Hong Phat", "Bao Ngoc", "Thien Phuc", "Minh Tri", "Phuong Nam", "Kim Son", "Hai Dang", "Tan Phu", "Lac Viet",
+               "Sao Mai", "Hoa Mai", "Truong An", "Viet Tien", "Nam Long", "Duc Tri", "Gia Hoa", "Thanh Binh", "Phu An",
+               "Hung Thinh", "Quang Minh", "Tuong Lai", "Anh Duong", "Song Hong", "Hoang Kim", "Dai Phat", "Binh Minh",
+               "Thuan Phat", "Ngoc Diep", "Bach Viet", "Trung Son", "An Khang", "Huong Sen", "Cat Tuong", "Phuc Loc",
+               "Van Xuan", "Dong Tam", "Tri Duc", "Hai Au", "Thao Nguyen", "Vinh Hung"]
+PLACE_SUFFIX = {
+    "school": ["Primary School", "Secondary School", "High School", "Kindergarten", "Vocational College", "Language Centre"],
+    "office": ["Trading Office", "Insurance Branch", "Bank Branch", "Logistics Office", "Ward Office"],
+    "industrial": ["Garment Factory", "Electronics Plant", "Packaging Works"],
+    "gated_facility": ["Clinic (gated campus)", "Pharmacy (guarded lot)", "Residence (gated)", "Hotel (security desk)", "Mall (staff gate)"],
+}
+PICKUP_NAMES = [["Thu Ha Grocery", "Minh Chau Stationery"], ["Lan Anh Mini Mart", "Phuc An Bookshop"], ["Hoa Binh Grocery", "Kim Ngan Copy Shop"],
+                ["Tuan Phat Mini Mart", "Ngoc Mai Stationery"], ["Bich Thuy Grocery", "Thanh Dat Phone Shop"], ["Song Tra Mini Mart", "Hai Yen Stationery"]]
 FAMILY = ["Nguyen", "Tran", "Le", "Pham", "Hoang", "Vu", "Dang", "Bui", "Do", "Ho", "Ngo", "Duong", "Ly"]
 MIDDLE = ["Van", "Thi", "Minh", "Ngoc", "Gia", "Thanh", "Duc", "Bao", "Kim", "Quoc"]
 GIVEN = ["An", "Binh", "Chi", "Dung", "Giang", "Ha", "Hieu", "Khanh", "Lan", "Linh", "Long", "Mai", "Nam",
@@ -240,71 +255,7 @@ def main(path):
         "gradientBoosting": m3(out["metrics"]["gradient_boosting"]),
     }
 
-    # ------------------------------------------------ knowledge + fixtures (demo zone only)
-    zone = df[df.rider_id == DEMO_RIDER]
-    pins = zone.dropna(subset=["address_latitude"])
-    proj = make_projector(float(pins.address_latitude.mean()), float(pins.address_longitude.mean()))
-
-    loc_ids = sorted(zone.location_id.unique())
-    name_pool = {k: list(v) for k, v in LOCATION_NAMES.items()}
-    loc_key, loc_name = {}, {}
-    for i, lid in enumerate(loc_ids):
-        t = zone[zone.location_id == lid].location_type.iloc[0]
-        loc_key[lid] = f"loc-{i + 1:02d}"
-        loc_name[lid] = name_pool[t].pop(0)
-
-    hist = zone[zone.delivery_date < KNOWLEDGE_CUTOFF]
-    knowledge = []
-    for lid in loc_ids:
-        sub = hist[hist.location_id == lid]
-        t = sub.location_type.iloc[0]
-        notes = Counter()
-        for raw in sub.access_context_raw:
-            for text, kind in split_notes(raw):
-                notes[(text, kind)] += 1
-        visits = len(sub)
-
-        def top(kind, min_share=0.15):
-            items = [(txt, n) for (txt, k), n in notes.items() if k == kind and n >= 2 and n / visits >= min_share]
-            return [{"text": txt, "count": int(n)} for txt, n in sorted(items, key=lambda x: -x[1])]
-
-        delivered_pins = [proj(a, b) for a, b in zip(sub[sub.ok == 1].address_latitude, sub[sub.ok == 1].address_longitude)]
-        delivered_pins = [p for p in delivered_pins if p]
-        all_pins = [p for p in (proj(a, b) for a, b in zip(sub.address_latitude, sub.address_longitude)) if p]
-        cand = [round(float(np.mean([p[0] for p in delivered_pins])), 1),
-                round(float(np.mean([p[1] for p in delivered_pins])), 1)] if delivered_pins else None
-        spread = round(float(np.mean([math.dist(p, cand) for p in all_pins])), 0) if cand and all_pins else None
-        windows = {}
-        for w in WINDOWS:
-            for daytype, mask in (("weekday", ~sub.weekend), ("weekend", sub.weekend)):
-                ss = sub[(sub.attempt_time == w) & mask]
-                windows[f"{w}|{daytype}"] = {"attempts": int(len(ss)), "delivered": int(ss.ok.sum())}
-        restrictions = []
-        weekend_visits = int(sub.weekend.sum())
-        window_items = top("window")
-        # weekend closures only show up on weekend visits, so judge them against weekend visits
-        for (txt, k), n in notes.items():
-            if (k == "window" and "weekend" in txt and n >= 2 and weekend_visits
-                    and n / weekend_visits >= 0.15 and txt not in [w["text"] for w in window_items]):
-                window_items.append({"text": txt, "count": int(n)})
-        for item in window_items:
-            rule = WINDOW_RULES.get(item["text"])
-            if rule:
-                restrictions.append({**item, **rule})
-        svc = sub.buyer_address_processing_time_min.dropna()
-        knowledge.append({
-            "key": loc_key[lid], "name": loc_name[lid], "type": t,
-            "visits": int(visits), "firstAttemptSuccess": r4(sub.ok.mean()),
-            "entranceCandidate": cand, "pinSpreadMeters": spread,
-            "pinMissingShare": r4(sub.address_latitude.isna().mean()),
-            "serviceMinutesMedian": None if svc.empty else float(svc.median()),
-            "entranceNotes": top("entrance"), "handoverNotes": top("handover"),
-            "accessNotes": top("restriction"), "windowNotes": window_items, "windowRestrictions": restrictions,
-            "pastIssues": [{"text": txt, "count": int(n)} for (txt, k), n in notes.most_common() if k == "issue"][:5],
-            "windowHistory": windows,
-            "evidence": f"{visits} dataset visits, 1–30 Sep 2026",
-        })
-
+    # ------------------------------------------------ knowledge + fixtures (every rider zone)
     used_names = set()
 
     def buyer_name():
@@ -314,36 +265,143 @@ def main(path):
                 used_names.add(n)
                 return n
 
-    shifts = []
-    for date, sid in SHIFTS:
-        day = zone[zone.delivery_date == pd.Timestamp(date)].sort_values("order_id")
-        stops = []
-        for i, r in enumerate(day.itertuples()):
-            svc = None if pd.isna(r.buyer_address_processing_time_min) else float(r.buyer_address_processing_time_min)
-            stops.append({
-                "id": f"{sid[6:].upper()}-{i + 1:02d}", "receivedOrder": i + 1, "buyer": buyer_name(),
-                "locationKey": loc_key[r.location_id], "locationType": r.location_type,
-                "payment": r.payment_type, "parcel": r.parcel_type,
-                "pin": proj(r.address_latitude, r.address_longitude),
-                "serviceMinutes": svc, "isReattempt": bool(r.attempt_no > 1),
-            })
-        dt = pd.Timestamp(date)
-        actual = {"attempts": int(len(day)), "delivered": int(day.ok.sum()),
-                  "byWindow": {w: {"attempts": int((day.attempt_time == w).sum()),
-                                   "delivered": int(day[day.attempt_time == w].ok.sum())} for w in WINDOWS}}
-        shifts.append({"id": sid, "date": date, "weekday": dt.day_name(), "isWeekend": bool(dt.dayofweek >= 5),
-                       "zoneLabel": "Demo zone (one dataset rider area, de-identified)", "stops": stops,
-                       "actualDatasetOutcome": actual})
+    name_rng = random.Random(7)
+    used_loc_names = set(n for v in LOCATION_NAMES.values() for n in v)
 
-    all_pts = [k["entranceCandidate"] for k in knowledge if k["entranceCandidate"]]
-    hub = [round(float(np.mean([p[0] for p in all_pts])) - 350, 1), round(float(np.mean([p[1] for p in all_pts])) - 250, 1)]
-    fixtures = {"hub": {"name": "Demo Hub", "pos": hub}, "knowledge": knowledge, "shifts": shifts,
-                "note": "De-identified demo fixtures generated from the Strategy dataset. Names are fictional; positions are rotated local metres."}
+    def fictional_location(t):
+        while True:
+            n = f"{name_rng.choice(PLACE_WORDS)} {name_rng.choice(PLACE_SUFFIX[t])}"
+            if n not in used_loc_names:
+                used_loc_names.add(n)
+                return n
+
+    knowledge, shifts, riders = [], [], []
+    for zi, (rid, letter, rname) in enumerate(RIDERS):
+        zone = df[df.rider_id == rid]
+        pins = zone.dropna(subset=["address_latitude"])
+        proj = make_projector(float(pins.address_latitude.mean()), float(pins.address_longitude.mean()))
+        loc_ids = sorted(zone.location_id.unique())
+        loc_key, loc_name = {}, {}
+        if rid == DEMO_RIDER:  # keep the original demo zone exactly as before
+            name_pool = {k: list(v) for k, v in LOCATION_NAMES.items()}
+            for i, lid in enumerate(loc_ids):
+                t = zone[zone.location_id == lid].location_type.iloc[0]
+                loc_key[lid] = f"loc-{i + 1:02d}"
+                loc_name[lid] = name_pool[t].pop(0)
+        else:
+            for i, lid in enumerate(loc_ids):
+                t = zone[zone.location_id == lid].location_type.iloc[0]
+                loc_key[lid] = f"z{letter.lower()}-{i + 1:02d}"
+                loc_name[lid] = fictional_location(t)
+
+        hist = zone[zone.delivery_date < KNOWLEDGE_CUTOFF]
+        zone_keys = []
+        for lid in loc_ids:
+            sub = hist[hist.location_id == lid]
+            t = zone[zone.location_id == lid].location_type.iloc[0]
+            notes = Counter()
+            for raw in sub.access_context_raw:
+                for text, kind in split_notes(raw):
+                    notes[(text, kind)] += 1
+            visits = len(sub)
+
+            def top(kind, min_share=0.15):
+                if not visits:
+                    return []
+                items = [(txt, n) for (txt, k), n in notes.items() if k == kind and n >= 2 and n / visits >= min_share]
+                return [{"text": txt, "count": int(n)} for txt, n in sorted(items, key=lambda x: -x[1])]
+
+            delivered_pins = [proj(a, b) for a, b in zip(sub[sub.ok == 1].address_latitude, sub[sub.ok == 1].address_longitude)]
+            delivered_pins = [p for p in delivered_pins if p]
+            all_pins = [p for p in (proj(a, b) for a, b in zip(sub.address_latitude, sub.address_longitude)) if p]
+            cand = [round(float(np.mean([p[0] for p in delivered_pins])), 1),
+                    round(float(np.mean([p[1] for p in delivered_pins])), 1)] if delivered_pins else None
+            spread = round(float(np.mean([math.dist(p, cand) for p in all_pins])), 0) if cand and all_pins else None
+            windows = {}
+            for w in WINDOWS:
+                for daytype, mask in (("weekday", ~sub.weekend), ("weekend", sub.weekend)):
+                    ss = sub[(sub.attempt_time == w) & mask]
+                    windows[f"{w}|{daytype}"] = {"attempts": int(len(ss)), "delivered": int(ss.ok.sum())}
+            restrictions = []
+            weekend_visits = int(sub.weekend.sum())
+            window_items = top("window")
+            # weekend closures only show up on weekend visits, so judge them against weekend visits
+            for (txt, k), n in notes.items():
+                if (k == "window" and "weekend" in txt and n >= 2 and weekend_visits
+                        and n / weekend_visits >= 0.15 and txt not in [w["text"] for w in window_items]):
+                    window_items.append({"text": txt, "count": int(n)})
+            for item in window_items:
+                rule = WINDOW_RULES.get(item["text"])
+                if rule:
+                    restrictions.append({**item, **rule})
+            svc = sub.buyer_address_processing_time_min.dropna()
+            knowledge.append({
+                "key": loc_key[lid], "zone": letter, "name": loc_name[lid], "type": t,
+                "visits": int(visits), "firstAttemptSuccess": r4(sub.ok.mean()) if visits else None,
+                "entranceCandidate": cand, "pinSpreadMeters": spread,
+                "pinMissingShare": r4(sub.address_latitude.isna().mean()) if visits else None,
+                "serviceMinutesMedian": None if svc.empty else float(svc.median()),
+                "entranceNotes": top("entrance"), "handoverNotes": top("handover"),
+                "accessNotes": top("restriction"), "windowNotes": window_items, "windowRestrictions": restrictions,
+                "pastIssues": [{"text": txt, "count": int(n)} for (txt, k), n in notes.most_common() if k == "issue"][:5],
+                "windowHistory": windows,
+                "evidence": f"{visits} dataset visits, 1–30 Sep 2026" if visits else "No dataset visits before October 2026",
+            })
+            zone_keys.append(loc_key[lid])
+
+        shift_ids = []
+        for date, kind in SHIFT_DATES:
+            sid = ("shift-wed" if kind == "weekday" else "shift-sat") if rid == DEMO_RIDER else f"shift-{letter.lower()}-{kind}"
+            prefix = ("WED" if kind == "weekday" else "SAT") if rid == DEMO_RIDER else f"{letter}{'W' if kind == 'weekday' else 'S'}"
+            day = zone[zone.delivery_date == pd.Timestamp(date)].sort_values("order_id")
+            stops = []
+            for i, r in enumerate(day.itertuples()):
+                svc = None if pd.isna(r.buyer_address_processing_time_min) else float(r.buyer_address_processing_time_min)
+                stops.append({
+                    "id": f"{prefix}-{i + 1:02d}", "receivedOrder": i + 1, "buyer": buyer_name(),
+                    "locationKey": loc_key[r.location_id], "locationType": r.location_type,
+                    "payment": r.payment_type, "parcel": r.parcel_type,
+                    "pin": proj(r.address_latitude, r.address_longitude),
+                    "serviceMinutes": svc, "isReattempt": bool(r.attempt_no > 1),
+                })
+            dt = pd.Timestamp(date)
+            actual = {"attempts": int(len(day)), "delivered": int(day.ok.sum()),
+                      "byWindow": {w: {"attempts": int((day.attempt_time == w).sum()),
+                                       "delivered": int(day[day.attempt_time == w].ok.sum())} for w in WINDOWS}}
+            shifts.append({"id": sid, "riderId": f"rider-{letter.lower()}", "date": date, "weekday": dt.day_name(),
+                           "isWeekend": bool(dt.dayofweek >= 5),
+                           "zoneLabel": f"Zone {letter} (one dataset rider area, de-identified)", "stops": stops,
+                           "actualDatasetOutcome": actual})
+            shift_ids.append(sid)
+
+        zk = [k for k in knowledge if k["zone"] == letter]
+        all_pts = [k["entranceCandidate"] for k in zk if k["entranceCandidate"]]
+        cx = float(np.mean([p[0] for p in all_pts]))
+        cy = float(np.mean([p[1] for p in all_pts]))
+        hub = [round(cx - 350, 1), round(cy - 250, 1)]
+        if rid == DEMO_RIDER:
+            pickups = [[-700, 560], [180, -720]]
+        else:
+            pickups = [[round(cx + 320, 0), round(cy + 280, 0)], [round(cx - 260, 0), round(cy - 380, 0)]]
+        shop_names = PICKUP_NAMES[zi]
+        riders.append({
+            "id": f"rider-{letter.lower()}", "letter": letter, "name": rname,
+            "label": f"Rider {letter} · {rname}", "persona": "new-rider persona (tenure is not in the dataset)",
+            "zoneLabel": f"Zone {letter}", "hub": {"name": f"Hub {letter}", "pos": hub},
+            "pickupPoints": [{"id": f"pp-{letter.lower()}-{j + 1}", "name": f"{shop_names[j]} (demo pickup point)",
+                              "pos": pickups[j], "hours": ["07:00–21:00", "08:00–20:00"][j]} for j in range(2)],
+            "shiftIds": shift_ids, "locations": len(zone_keys),
+        })
+
+    for k in knowledge:
+        k["zone"] = f"rider-{k['zone'].lower()}"
+    fixtures = {"riders": riders, "knowledge": knowledge, "shifts": shifts,
+                "note": "De-identified demo fixtures generated from the Strategy dataset. Names are fictional; positions are rotated local metres per zone."}
 
     OUT.mkdir(parents=True, exist_ok=True)
     for name, obj in [("historical-stats.json", historical), ("success-table.json", success_table),
                       ("model.json", model), ("evaluation.json", evaluation), ("demo-fixtures.json", fixtures)]:
-        (OUT / name).write_text(json.dumps(obj, ensure_ascii=False, indent=1))
+        (OUT / name).write_text(json.dumps(obj, ensure_ascii=False, indent=None if name == "demo-fixtures.json" else 1, separators=(",", ":") if name == "demo-fixtures.json" else None))
         print("wrote", name)
 
     # parity cases for the TypeScript model test (computed with sklearn)

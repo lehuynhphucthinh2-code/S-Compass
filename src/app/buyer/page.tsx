@@ -8,7 +8,7 @@ import { ProposalReview } from "@/components/ProposalReview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel, PanelHeader } from "@/components/ui/panel";
-import { pickupPoints } from "@/lib/data";
+import { riderOfShift } from "@/lib/data";
 import { buyerChange, buyerConfirm, buyerNoResponse, buyerPickup, confirmEligibility, inviteBuyer } from "@/lib/demoState";
 import { BLOCKS, blockLabel } from "@/lib/time";
 import type { Block } from "@/lib/types";
@@ -92,7 +92,7 @@ export default function BuyerPage() {
                           </Button>
                         ))}
                     </div>
-                    {pickupPoints.map((p) => (
+                    {riderOfShift(shift).pickupPoints.map((p) => (
                       <Button key={p.id} variant="outline" className="w-full justify-start" onClick={() => update((s) => buyerPickup(s, stop.id, p.id))}>
                         <Store /> Collect at {p.name.replace(" (demo pickup point)", "")} ({p.hours})
                       </Button>

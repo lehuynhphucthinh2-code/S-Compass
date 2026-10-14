@@ -261,7 +261,7 @@ export default function HowItWorks() {
           {ASSUMPTION_LABELS.map((a) => (
             <li key={a.key}>{a.text}</li>
           ))}
-          <li>Rider names, the second rider, pickup points and one pre-verified card are demo fixtures.</li>
+          <li>Rider names, the backup rider, pickup points and one pre-verified card are demo fixtures.</li>
         </ul>
       </Panel>
 
@@ -270,7 +270,7 @@ export default function HowItWorks() {
         <ul className="list-disc space-y-1.5 px-9 py-4 text-sm text-ink-soft">
           <li>The raw competition dataset is not in this website. A build script turns it into aggregate tables, model coefficients and de-identified demo fixtures.</li>
           <li>Order, buyer, location and rider IDs are removed. Buyer and site names are fictional. Pins are rotated into local metres, so no latitude or longitude is published.</li>
-          <li>Demo shifts are two real rider-days from one dataset zone (Wednesday 14 Oct and Saturday 10 Oct 2026), outside the model&apos;s training period.</li>
+          <li>Demo shifts are 12 real rider-days: all 6 dataset rider zones, each on Wednesday 14 Oct and Saturday 10 Oct 2026, outside the model&apos;s training period. Rider names are fictional; the dataset has no tenure, so every rider uses a new-rider persona.</li>
           <li>Buyer messages are simulated on the page. Nothing is sent to any phone, inbox or payment system.</li>
         </ul>
       </Panel>

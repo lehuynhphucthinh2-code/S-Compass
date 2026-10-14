@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label, Select, Textarea } from "@/components/ui/field";
-import { RIDER_A, recordOutcome, reportEntranceClosed, reportOtherIssue } from "@/lib/demoState";
+import { riderOfShift } from "@/lib/data";
+import { recordOutcome, reportEntranceClosed, reportOtherIssue } from "@/lib/demoState";
 import { blockInfo, fmt } from "@/lib/time";
 import type { PlannedStop } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -56,9 +57,9 @@ export default function RiderPage() {
     <div className="mx-auto max-w-md space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold leading-6">{RIDER_A}</h1>
+          <h1 className="text-lg font-semibold leading-6">{riderOfShift(shift).label}</h1>
           <p className="text-sm text-ink-faint">
-            {shift.weekday} {shift.date} · {done.length}/{plan.stops.length} done
+            {riderOfShift(shift).zoneLabel} · {shift.weekday} {shift.date} · {done.length}/{plan.stops.length} done
           </p>
         </div>
         <div className="text-right">

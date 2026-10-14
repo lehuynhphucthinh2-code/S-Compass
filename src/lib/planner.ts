@@ -1,4 +1,4 @@
-import { fixtures, pickupPoints } from "./data";
+import { allPickupPoints, riderOfShift } from "./data";
 import { predict } from "./model";
 import { tableP } from "./successTable";
 import { BLOCKS, SHIFT_END, SHIFT_START, blockInfo, blockLabel, blockOfTime, fmt } from "./time";
@@ -49,7 +49,6 @@ export interface PlanContext {
   sessionOutcomes?: { locationKey: string; block: Block; weekend: boolean; outcome: "delivered" | "failed" }[];
 }
 
-const hub = fixtures.hub.pos;
 
 function dist(a: Point, b: Point) {
   return Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -123,7 +122,7 @@ function buildCandidate(stop: FixtureStop, ctx: PlanContext): Candidate {
   let point: Point | null;
   let pointSource: PlannedStop["pointSource"];
   let searchMin: number;
-  const pickup = state.buyer.kind === "pickup" ? pickupPoints.find((p) => p.id === (state.buyer as { pickupId: string }).pickupId) : undefined;
+  const pickup = state.buyer.kind === "pickup" ? allPickupPoints.find((p) => p.id === (state.buyer as { pickupId: string }).pickupId) : undefined;
   if (pickup) {
     point = pickup.pos;
     pointSource = "pickup point";
@@ -306,7 +305,7 @@ export function makePlan(ctx: PlanContext): Plan {
   const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
   const method = ctx.method;
   const startMin = ctx.startMin ?? SHIFT_START;
-  const startPoint = ctx.startPoint ?? hub;
+  const startPoint = ctx.startPoint ?? riderOfShift(ctx.shift).hub.pos;
   const warnings: string[] = [];
 
   // Completed stops are fixed: copy them from the previous plan in their original order.

@@ -42,11 +42,21 @@ Observational check (not causal): attempts made in the block the rules would cho
 
 ## 4. Simulated plan estimates in the demo (not measured results)
 
-Same parcels, same rider, scored with the same history table:
+Expected successful first attempts for the same parcels, same rider and same start, scored with the same history table. "Actual" is what really happened on that rider-day in the dataset (attempts delivered).
 
-| Shift | Baseline (nearest pin) | Rules | Model (exp.) |
-|---|---|---|---|
-| Wed 14 Oct, 37 parcels | 28.2 | 30.5 | 30.9 |
-| Sat 10 Oct, 33 parcels | 20.4 | 23.0 | 22.3 |
+| Rider (zone) | Shift | Parcels | Actual | Baseline (nearest pin) | Rules | Model (exp.) |
+|---|---|---|---|---|---|---|
+| A · Minh | Wed 14 Oct | 37 | 29 | 28.2 | 30.5 | 30.9 |
+| A · Minh | Sat 10 Oct | 33 | 22 | 20.3 | 23.0 | 22.3 |
+| B · An | Wed 14 Oct | 39 | 29 | 28.7 | 32.1 | 33.0 |
+| B · An | Sat 10 Oct | 36 | 25 | 23.6 | 24.3 | 23.0 |
+| C · Bao | Wed 14 Oct | 34 | 29 | 27.8 | 29.1 | 28.9 |
+| C · Bao | Sat 10 Oct | 32 | 23 | 23.1 | 26.0 | 25.5 |
+| D · Chi | Wed 14 Oct | 43 | 33 | 31.2 | 34.0 | 33.3 |
+| D · Chi | Sat 10 Oct | 36 | 24 | 22.4 | 23.1 | 22.0 |
+| E · Duy | Wed 14 Oct | 39 | 31 | 30.6 | 33.2 | 32.5 |
+| E · Duy | Sat 10 Oct | 36 | 26 | 26.3 | 26.9 | 25.5 |
+| F · Giang | Wed 14 Oct | 42 | 33 | 32.5 | 36.0 | 35.4 |
+| F · Giang | Sat 10 Oct | 32 | 22 | 20.1 | 23.3 | 21.5 |
 
-The actual dataset outcome on those rider-days: 29 of 37 and 22 of 33 attempts delivered. Times, distances and entrance-search minutes are assumptions listed on the How it works page.
+The rules planner beats the distance-only baseline on all 12 rider-days. The experimental model beats rules on only 2 of 12. On Saturday the gain is small in zones B, D and E (under 1 expected delivery), because the morning block fills up and the remaining school and office stops have no good block left; this is where Buyer Confirm and pickup points matter. Several heavy days end after 20:30 even with the rules plan; the app flags this for the dispatcher instead of dropping stops. Times, distances and entrance-search minutes are assumptions listed on the How it works page.

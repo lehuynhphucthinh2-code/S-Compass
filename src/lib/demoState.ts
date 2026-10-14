@@ -1,4 +1,4 @@
-import { fixtures, pickupPoints, shiftById } from "./data";
+import { BACKUP_RIDER, allPickupPoints, fixtures, riderById, riderOfShift, shiftById } from "./data";
 import type { EvidenceEvent, Role } from "./evidence";
 import { applyCorrection, buildCard, type CardOverlay, type Correction, type CorrectionField, type OutcomeRecord } from "./knowledge";
 import { makePlan } from "./planner";
@@ -23,7 +23,7 @@ export interface Transfer {
 }
 
 export interface DemoState {
-  version: 2;
+  version: 3;
   sessionId: string;
   shiftId: string;
   method: PlanMethod;
@@ -43,9 +43,14 @@ export interface DemoState {
   events: EvidenceEvent[];
 }
 
-export const RIDER_A = "Rider A · Minh (new rider, week 3)";
-export const RIDER_B = "Rider B · Hoa (veteran, 2 years)";
-export const DEMO_TODAY: Record<string, string> = { "shift-wed": "2026-10-14", "shift-sat": "2026-10-10" };
+/** Label of the rider who owns a shift, e.g. "Rider A · Minh". */
+export function riderLabel(shiftId: string) {
+  return riderOfShift(shiftById(shiftId)).label;
+}
+
+function demoToday(shiftId: string) {
+  return shiftById(shiftId).date;
+}
 
 let counter = 0;
 export function uid(prefix: string) {
@@ -63,7 +68,7 @@ function initialStopStates(): DemoState["stopStates"] {
 
 export function initialState(): DemoState {
   return {
-    version: 2,
+    version: 3,
     sessionId: uid("session"),
     shiftId: fixtures.shifts[0].id,
     method: "rules",
@@ -125,7 +130,7 @@ function current(state: DemoState) {
 export function riderPosition(state: DemoState): { point: Point; min: number } {
   const plan = current(state);
   const states = state.stopStates[state.shiftId];
-  let point: Point = fixtures.hub.pos;
+  let point: Point = riderOfShift(shiftById(state.shiftId)).hub.pos;
   if (plan) {
     for (const s of plan.stops) {
       const st = states[s.stopId];
@@ -145,7 +150,7 @@ export function planFor(state: DemoState, method: PlanMethod): Plan {
     cards: cardsFor(state),
     stopStates: state.stopStates[state.shiftId],
     startMin: started ? pos.min : SHIFT_START,
-    startPoint: started ? pos.point : fixtures.hub.pos,
+    startPoint: started ? pos.point : riderOfShift(shift).hub.pos,
     previous: current(state),
     sessionOutcomes: state.outcomes,
   });
@@ -156,9 +161,13 @@ function describePlan(p: Plan) {
 }
 
 // ------------------------------------------------------------------ actions
+export function selectRider(state: DemoState, riderId: string): DemoState {
+  return selectShift(state, riderById(riderId).shiftIds[0]);
+}
+
 export function selectShift(state: DemoState, shiftId: string): DemoState {
   const s = { ...state, shiftId, draftPlan: null, comparison: null };
-  return log(s, { type: "shift_selected", summary: `Selected ${shiftById(shiftId).weekday} ${shiftById(shiftId).date} shift` });
+  return log(s, { type: "shift_selected", summary: `Selected ${riderLabel(shiftId)}, ${shiftById(shiftId).weekday} ${shiftById(shiftId).date} shift` });
 }
 
 export function generatePlan(state: DemoState, method: PlanMethod): DemoState {
@@ -193,7 +202,7 @@ export function dispatchPlan(state: DemoState, plan: Plan): DemoState {
     draftPlan: null,
     proposals: state.proposals.map((p) => (p.status === "open" && p.previous.shiftId === state.shiftId ? { ...p, status: "overridden" as const, decisionNote: "Superseded by a newly dispatched plan" } : p)),
   };
-  return log(s, { type: "plan_dispatched", role: "dispatcher", summary: `Dispatched ${plan.method} plan to ${RIDER_A}`, output: describePlan(plan) });
+  return log(s, { type: "plan_dispatched", role: "dispatcher", summary: `Dispatched ${plan.method} plan to ${riderLabel(state.shiftId)}`, output: describePlan(plan) });
 }
 
 export function openCard(state: DemoState, key: string, from: string): DemoState {
@@ -213,7 +222,7 @@ export function suggestCorrection(
     field,
     text,
     restrictionCode,
-    proposedBy: state.role === "rider" ? RIDER_A : "Dispatcher",
+    proposedBy: state.role === "rider" ? riderLabel(state.shiftId) : "Dispatcher",
     createdAt: new Date().toISOString(),
     status: "pending",
   };
@@ -229,7 +238,7 @@ export function suggestCorrection(
 export function decideCorrection(state: DemoState, id: string, approve: boolean, note?: string): DemoState {
   const c = state.corrections.find((x) => x.id === id);
   if (!c || c.status !== "pending") return state;
-  const date = DEMO_TODAY[state.shiftId];
+  const date = demoToday(state.shiftId);
   const corrections = state.corrections.map((x) =>
     x.id === id ? { ...x, status: approve ? ("approved" as const) : ("rejected" as const), decidedAt: new Date().toISOString(), decidedBy: "Dispatcher", note } : x,
   );
@@ -257,10 +266,10 @@ export function verifyCard(state: DemoState, key: string): DemoState {
       [key]: {
         ...state.overlays[key],
         status: "verified" as const,
-        lastVerified: DEMO_TODAY[state.shiftId],
+        lastVerified: demoToday(state.shiftId),
         verifiedBy: "Dispatcher",
         verificationRequested: false,
-        source: state.overlays[key]?.verificationRequested ? "Confirmed on site by Rider A, approved by dispatcher" : "Checked by dispatcher",
+        source: state.overlays[key]?.verificationRequested ? `Confirmed on site by ${riderLabel(state.shiftId)}, approved by dispatcher` : "Checked by dispatcher",
         disputeReason: undefined,
       },
     },
@@ -329,7 +338,7 @@ export function buyerChange(state: DemoState, stopId: string, block: Block): Dem
 }
 
 export function buyerPickup(state: DemoState, stopId: string, pickupId: string): DemoState {
-  const pp = pickupPoints.find((p) => p.id === pickupId)!;
+  const pp = allPickupPoints.find((p) => p.id === pickupId)!;
   let s = setBuyer(state, stopId, { kind: "pickup", pickupId, at: new Date().toISOString() });
   s = addMessage(s, stopId, "Buyer", `I will collect it at ${pp.name}.`);
   s = log(s, { type: "buyer_pickup", role: "buyer", summary: `Buyer of ${stopId} chose ${pp.name}`, output: "Stop moves to the pickup point; success effect not estimated (no data)" });
@@ -425,8 +434,8 @@ export function transferParcel(state: DemoState, stopId: string, note: string): 
   const ss = state.stopStates[state.shiftId];
   const s: DemoState = {
     ...state,
-    stopStates: { ...state.stopStates, [state.shiftId]: { ...ss, [stopId]: { ...ss[stopId], status: "transferred", transferredTo: RIDER_B } } },
-    transfers: [...state.transfers, { stopId, shiftId: state.shiftId, to: RIDER_B, note, at: new Date().toISOString() }],
+    stopStates: { ...state.stopStates, [state.shiftId]: { ...ss, [stopId]: { ...ss[stopId], status: "transferred", transferredTo: BACKUP_RIDER } } },
+    transfers: [...state.transfers, { stopId, shiftId: state.shiftId, to: BACKUP_RIDER, note, at: new Date().toISOString() }],
     currentPlan: current(state)
       ? {
           ...state.currentPlan,
@@ -437,9 +446,9 @@ export function transferParcel(state: DemoState, stopId: string, note: string): 
   return log(s, {
     type: "parcel_transferred",
     role: "dispatcher",
-    summary: `Dispatcher moved ${stopId} from Rider A to Rider B`,
+    summary: `Dispatcher moved ${stopId} from ${riderLabel(state.shiftId)} to the backup rider`,
     input: note,
-    output: "Physical handover needed. Rider A's remaining order otherwise unchanged; regenerate to re-optimise",
+    output: "Physical handover needed. The rider's remaining order is otherwise unchanged; regenerate to re-optimise",
   });
 }
 

@@ -16,7 +16,7 @@ export interface PersistenceAdapter {
   clear(): Promise<void>;
 }
 
-const LOCAL_KEY = "s-compass-demo-v2";
+const LOCAL_KEY = "s-compass-demo-v3";
 const SESSION_KEY = "s-compass-session-id";
 
 function now() {
@@ -28,7 +28,7 @@ function readLocal(): DemoState | null {
     const raw = window.localStorage.getItem(LOCAL_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as DemoState;
-    return parsed?.version === 2 ? parsed : null;
+    return parsed?.version === 3 ? parsed : null;
   } catch {
     return null;
   }
@@ -82,7 +82,8 @@ export function supabaseAdapter(url: string, anonKey: string): PersistenceAdapte
       if (!sessionId) return cached;
       const { data, error } = await client.from("demo_sessions").select("state").eq("id", sessionId).maybeSingle();
       if (error) throw new Error(`Could not load from Supabase: ${error.message}`);
-      const state = (data?.state as DemoState | undefined) ?? cached;
+      const remote = data?.state as DemoState | undefined;
+      const state = remote?.version === 3 ? remote : cached;
       if (state) syncedEvents = new Set(state.events.map((e) => e.id));
       return state ?? null;
     },

@@ -8,9 +8,9 @@ It is a competition prototype, not an official Shopee product. Buyer and place n
 
 | Screen | What it shows |
 |---|---|
-| Dispatcher | Pick a demo shift, generate a plan with three methods (Baseline, Rules-based, Model experimental), compare them, dispatch one, move a parcel to another rider |
+| Dispatcher | Pick one of 6 riders (one per dataset zone) and a weekday or weekend shift, generate a plan with three methods (Baseline, Rules-based, Model experimental), compare them, dispatch one, move a parcel to the backup rider |
 | Rider (mobile) | Next recommended stop, why it is next, ordered remaining stops, Open stop card, Report issue, Record outcome |
-| Stop cards | The Stop Knowledge Map: entrance, handover, access rules, receiving windows, source, last verification date, status (unverified, suggested, verified, disputed), corrections to approve |
+| Stop cards | The Stop Knowledge Map for the selected rider's zone: entrance, handover, access rules, receiving windows, source, last verification date, status (unverified, suggested, verified, disputed), corrections to approve |
 | Buyer simulation | Act as a buyer: confirm a window, ask for another window, pick a pickup point, or leave the message unanswered |
 | Replanning | Two demo events (buyer changes window, entrance unavailable), previous vs proposed sequence, reasons, affected commitments, accept or override |
 | Evidence | Every real interaction in the session, with metrics and CSV/JSON export |
@@ -56,7 +56,7 @@ data-private/       put the raw dataset here; this folder is NOT uploaded to Git
 
 ## Data and privacy
 
-The raw dataset is **not** inside the website. `scripts/build_data.py` creates aggregate tables, model coefficients and two de-identified demo shifts. It removes order, buyer, location and rider IDs, uses fictional names, and turns map pins into rotated local metres, so no latitude or longitude is published. A test (`npm test`) checks this.
+The raw dataset is **not** inside the website. `scripts/build_data.py` creates aggregate tables, model coefficients and 12 de-identified demo shifts (6 rider zones × Wednesday 14 Oct and Saturday 10 Oct 2026). It removes order, buyer, location and rider IDs, uses fictional names, and turns map pins into rotated local metres, so no latitude or longitude is published. A test (`npm test`) checks this.
 
 To rebuild the data (only needed if the dataset changes):
 

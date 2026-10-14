@@ -6,7 +6,7 @@ import { CardStatusBadge, TYPE_LABEL } from "@/components/bits";
 import { StopCardDialog } from "@/components/StopCardDialog";
 import { Button } from "@/components/ui/button";
 import { Panel, PanelHeader } from "@/components/ui/panel";
-import { fixtures } from "@/lib/data";
+import { knowledgeForRider, riderOfShift } from "@/lib/data";
 import { decideCorrection } from "@/lib/demoState";
 import type { CardStatus } from "@/lib/types";
 import { cn, pct } from "@/lib/utils";
@@ -18,13 +18,15 @@ export default function StopsPage() {
   const { state, update, cards, shift } = useDemo();
   const [open, setOpen] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<CardStatus | "all">("all");
-  const pending = state.corrections.filter((c) => c.status === "pending");
+  const pending = state.corrections.filter((c) => c.status === "pending" && cards[c.locationKey] && knowledgeForRider(riderOfShift(shift).id).some((k) => k.key === c.locationKey));
   const decided = state.corrections.filter((c) => c.status !== "pending").slice().reverse();
-  const list = fixtures.knowledge
-    .map((k) => cards[k.key])
+  const rider = riderOfShift(shift);
+  const zoneKnowledge = knowledgeForRider(rider.id);
+  const zoneCards = zoneKnowledge.map((k) => cards[k.key]);
+  const list = zoneCards
     .filter((c) => filter === "all" || c.status === filter)
     .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status));
-  const counts = Object.fromEntries(ORDER.map((s) => [s, Object.values(cards).filter((c) => c.status === s).length]));
+  const counts = Object.fromEntries(ORDER.map((s) => [s, zoneCards.filter((c) => c.status === s).length]));
   const ordersToday = (key: string) => shift.stops.filter((s) => s.locationKey === key).length;
   const isDispatcher = state.role === "dispatcher";
 
@@ -32,9 +34,9 @@ export default function StopsPage() {
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-semibold">Stop Knowledge Map</h1>
+          <h1 className="text-xl font-semibold">Stop Knowledge Map · {rider.zoneLabel}</h1>
           <p className="max-w-3xl text-sm text-ink-soft">
-            One card per delivery site in the demo zone. Cards start from dataset notes (suggested) and only become verified after a rider confirms on site and a
+            One card per delivery site in the zone of {rider.label} ({zoneCards.length} sites). Change the rider on the Dispatcher screen to see another zone. Cards start from dataset notes (suggested) and only become verified after a rider confirms on site and a
             dispatcher approves. A dataset coordinate is never treated as a verified entrance.
           </p>
         </div>
@@ -47,7 +49,7 @@ export default function StopsPage() {
               onClick={() => setFilter(f)}
               className={cn("rounded-md border px-3 py-1 text-sm", filter === f ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink-soft")}
             >
-              {f === "all" ? `All (${fixtures.knowledge.length})` : `${f[0].toUpperCase()}${f.slice(1)} (${counts[f]})`}
+              {f === "all" ? `All (${zoneCards.length})` : `${f[0].toUpperCase()}${f.slice(1)} (${counts[f]})`}
             </button>
           ))}
         </div>
@@ -68,7 +70,7 @@ export default function StopsPage() {
                   <p className="mt-1 text-xs text-warn">{c.restrictions.map((r) => r.text).join("; ")}</p>
                 ) : null}
                 <p className="mt-2 text-xs text-ink-faint">
-                  Pin spread {c.pinSpreadMeters ?? "—"} m · first-attempt success {pct(fixtures.knowledge.find((k) => k.key === c.key)!.firstAttemptSuccess)} · last verified {c.lastVerified ?? "never"}
+                  Pin spread {c.pinSpreadMeters ?? "—"} m · first-attempt success {pct(zoneKnowledge.find((k) => k.key === c.key)!.firstAttemptSuccess)} · last verified {c.lastVerified ?? "never"}
                 </p>
               </button>
             </li>

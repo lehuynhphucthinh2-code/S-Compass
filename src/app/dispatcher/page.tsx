@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Label, Textarea } from "@/components/ui/field";
 import { Panel, PanelHeader } from "@/components/ui/panel";
-import { fixtures, historical } from "@/lib/data";
-import { RIDER_A, RIDER_B, comparePlans, dispatchPlan, generatePlan, selectShift, transferParcel } from "@/lib/demoState";
+import { BACKUP_RIDER, fixtures, historical, riderOfShift } from "@/lib/data";
+import { comparePlans, dispatchPlan, generatePlan, selectRider, selectShift, transferParcel } from "@/lib/demoState";
 import { metrics } from "@/lib/evidence";
 import { METHOD_LABEL } from "@/lib/planner";
 import { fmt } from "@/lib/time";
@@ -31,6 +31,7 @@ export default function DispatcherPage() {
   const [transferStop, setTransferStop] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<string | null>(null);
 
+  const rider = riderOfShift(shift);
   const draft = state.draftPlan && state.draftPlan.shiftId === shift.id ? state.draftPlan : null;
   const shown: Plan | null = draft ?? plan;
   const states = state.stopStates[shift.id];
@@ -64,6 +65,24 @@ export default function DispatcherPage() {
       <Panel>
         <div className="flex flex-wrap items-end gap-4 px-4 py-4">
           <div>
+            <label htmlFor="rider" className="text-xs text-ink-faint">
+              Rider
+            </label>
+            <select
+              id="rider"
+              className="mt-1 block h-10 rounded-lg border border-line bg-surface px-3 text-sm font-medium"
+              value={rider.id}
+              onChange={(e) => update((s) => selectRider(s, e.target.value))}
+            >
+              {fixtures.riders.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label} · {r.zoneLabel} ({r.locations} sites)
+                </option>
+              ))}
+            </select>
+            <div className="mt-1 text-xs text-ink-faint">Demo persona: new rider. Tenure is not in the dataset.</div>
+          </div>
+          <div>
             <label htmlFor="shift" className="text-xs text-ink-faint">
               Demo shift
             </label>
@@ -73,17 +92,16 @@ export default function DispatcherPage() {
               value={shift.id}
               onChange={(e) => update((s) => selectShift(s, e.target.value))}
             >
-              {fixtures.shifts.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.weekday} {s.date} · {s.stops.length} parcels
-                </option>
-              ))}
+              {rider.shiftIds.map((id) => {
+                const s = fixtures.shifts.find((x) => x.id === id)!;
+                return (
+                  <option key={s.id} value={s.id}>
+                    {s.weekday} {s.date} · {s.stops.length} parcels
+                  </option>
+                );
+              })}
             </select>
-          </div>
-          <div className="text-sm">
-            <div className="text-xs text-ink-faint">Rider</div>
-            <div className="mt-1 font-medium">{RIDER_A}</div>
-            <div className="text-xs text-ink-faint">{shift.zoneLabel}</div>
+            <div className="mt-1 text-xs text-ink-faint">A real rider-day from the dataset, de-identified</div>
           </div>
           <div className="text-sm" role="group" aria-label="Planning method">
             <div className="text-xs text-ink-faint">Planning method</div>
@@ -196,7 +214,7 @@ export default function DispatcherPage() {
             title="Deliveries"
             note={
               shown
-                ? `${shown.stops.length} assigned · ${pendingCount} pending · ${riskCount} at risk${transferred.length ? ` · ${transferred.length} moved to Rider B` : ""}`
+                ? `${shown.stops.length} assigned · ${pendingCount} pending · ${riskCount} at risk${transferred.length ? ` · ${transferred.length} moved to the backup rider` : ""}`
                 : `${shift.stops.length} parcels loaded, in the order they were received`
             }
             actions={
@@ -309,7 +327,7 @@ export default function DispatcherPage() {
                                   e.stopPropagation();
                                   setTransferStop(ps.stopId);
                                 }}
-                                title="Move this parcel to Rider B (explicit dispatcher action)"
+                                title="Move this parcel to the backup rider (explicit dispatcher action)"
                               >
                                 <ArrowLeftRight /> Move
                               </Button>
@@ -340,7 +358,7 @@ export default function DispatcherPage() {
                   </Button>
                 }
               >
-                {shift.stops.length} parcels are loaded for {RIDER_A}. Generate a plan, compare the three methods, then dispatch one to the rider.
+                {shift.stops.length} parcels are loaded for {rider.label}. Generate a plan, compare the three methods, then dispatch one to the rider.
               </EmptyState>
               <ul className="mt-4 grid gap-1 text-sm sm:grid-cols-2">
                 {shift.stops.map((s) => (
@@ -372,13 +390,13 @@ export default function DispatcherPage() {
           <Panel>
             <PanelHeader title="Route" note="Click a stop to highlight it in the list" />
             <div className="px-4 py-3">
-              <RouteMap plan={shown} states={states} selected={selected} onSelect={setSelected} />
+              <RouteMap riderId={rider.id} plan={shown} states={states} selected={selected} onSelect={setSelected} />
             </div>
           </Panel>
           {selected && shown ? <SelectedStop ps={shown.stops.find((x) => x.stopId === selected)} onOpen={() => setCardOpen({ key: stopById[selected].locationKey, stopId: selected })} /> : null}
           {transferred.length ? (
             <Panel>
-              <PanelHeader title={RIDER_B} note="Parcels moved here by the dispatcher" />
+              <PanelHeader title={BACKUP_RIDER} note="Parcels moved here by the dispatcher" />
               <ul className="space-y-1 px-4 py-3 text-sm">
                 {transferred.map((t) => (
                   <li key={t.stopId}>
@@ -393,7 +411,7 @@ export default function DispatcherPage() {
 
       <StopCardDialog cardKey={cardOpen?.key ?? null} stopId={cardOpen?.stopId} open={!!cardOpen} onOpenChange={(o) => !o && setCardOpen(null)} from="dispatcher list" />
       <CompareDialog open={compareOpen} onOpenChange={setCompareOpen} />
-      <TransferDialog stopId={transferStop} onClose={() => setTransferStop(null)} onConfirm={(note) => transferStop && update((s) => transferParcel(s, transferStop, note))} />
+      <TransferDialog stopId={transferStop} riderName={rider.label} onClose={() => setTransferStop(null)} onConfirm={(note) => transferStop && update((s) => transferParcel(s, transferStop, note))} />
     </div>
   );
 }
@@ -505,15 +523,15 @@ function CompareDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   );
 }
 
-function TransferDialog({ stopId, onClose, onConfirm }: { stopId: string | null; onClose: () => void; onConfirm: (note: string) => void }) {
-  const [note, setNote] = React.useState("Rider A is over capacity in the evening block");
+function TransferDialog({ stopId, riderName, onClose, onConfirm }: { stopId: string | null; riderName: string; onClose: () => void; onConfirm: (note: string) => void }) {
+  const [note, setNote] = React.useState("Rider is over capacity in the evening block");
   return (
     <Dialog open={!!stopId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent title={`Move ${stopId} to ${RIDER_B}?`} description="The parcel is already loaded on Rider A. Moving it needs a physical handover, so it only happens when you confirm here.">
+      <DialogContent title={`Move ${stopId} to the backup rider?`} description={`The parcel is already loaded on ${riderName}. Moving it to ${BACKUP_RIDER} needs a physical handover, so it only happens when you confirm here.`}>
         <Label htmlFor="transfer-note">Reason (saved in the evidence log)</Label>
         <Textarea id="transfer-note" value={note} onChange={(e) => setNote(e.target.value)} />
         <div className="mt-4 flex justify-end gap-2">
-          <Button onClick={onClose}>Keep with Rider A</Button>
+          <Button onClick={onClose}>Keep with {riderName}</Button>
           <Button
             variant="primary"
             disabled={!note.trim()}

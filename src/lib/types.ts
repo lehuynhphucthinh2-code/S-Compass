@@ -26,13 +26,14 @@ export interface WindowRestriction extends NoteCount {
 
 export interface KnowledgeRecord {
   key: string;
+  zone: string; // rider id that owns this zone
   name: string;
   type: LocationType;
   visits: number;
-  firstAttemptSuccess: number;
+  firstAttemptSuccess: number | null;
   entranceCandidate: Point | null;
   pinSpreadMeters: number | null;
-  pinMissingShare: number;
+  pinMissingShare: number | null;
   serviceMinutesMedian: number | null;
   entranceNotes: NoteCount[];
   handoverNotes: NoteCount[];
@@ -59,6 +60,7 @@ export interface FixtureStop {
 
 export interface Shift {
   id: string;
+  riderId: string;
   date: string;
   weekday: string;
   isWeekend: boolean;
@@ -169,6 +171,19 @@ export interface Plan {
   totals: PlanTotals;
   warnings: string[];
   computeMs: number;
+}
+
+export interface Rider {
+  id: string;
+  letter: string;
+  name: string;
+  label: string;
+  persona: string;
+  zoneLabel: string;
+  hub: { name: string; pos: Point };
+  pickupPoints: PickupPoint[];
+  shiftIds: string[];
+  locations: number;
 }
 
 export interface PickupPoint {

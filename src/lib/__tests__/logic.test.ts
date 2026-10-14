@@ -100,7 +100,7 @@ describe("planner", () => {
   it("pickup choice routes the stop to the pickup point", () => {
     let s = initialState();
     const id = shiftById(s.shiftId).stops[3].id;
-    s = buyerPickup(s, id, "pp-1");
+    s = buyerPickup(s, id, "pp-a-1");
     const ps = planFor(s, "rules").stops.find((x) => x.stopId === id)!;
     expect(ps.pointSource).toBe("pickup point");
     expect(ps.p).toBeNull();
@@ -152,6 +152,34 @@ describe("planner", () => {
     expect(s.currentPlan[s.shiftId]!.stops.some((x) => x.stopId === id)).toBe(false);
     expect(planFor(s, "rules").stops.some((x) => x.stopId === id)).toBe(false);
     expect(s.transfers.length).toBe(1);
+  });
+});
+
+describe("all six rider zones", () => {
+  it("every rider shift plans every stop with every method", () => {
+    expect(fixtures.riders.length).toBe(6);
+    expect(fixtures.shifts.length).toBe(12);
+    for (const sh of fixtures.shifts) {
+      const s = selectShift(initialState(), sh.id);
+      for (const m of ["baseline", "rules", "model"] as const) {
+        const plan = planFor(s, m);
+        expect(plan.stops.map((x) => x.stopId).sort()).toEqual(sh.stops.map((x) => x.id).sort());
+      }
+    }
+  });
+
+  it("stop ids, location keys and pickup ids are unique across zones", () => {
+    const stopIds = fixtures.shifts.flatMap((s) => s.stops.map((x) => x.id));
+    expect(new Set(stopIds).size).toBe(stopIds.length);
+    const keys = fixtures.knowledge.map((k) => k.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    const pp = fixtures.riders.flatMap((r) => r.pickupPoints.map((p) => p.id));
+    expect(new Set(pp).size).toBe(pp.length);
+  });
+
+  it("every stop's site belongs to its rider's zone", () => {
+    const zoneOf = Object.fromEntries(fixtures.knowledge.map((k) => [k.key, k.zone]));
+    for (const sh of fixtures.shifts) for (const st of sh.stops) expect(zoneOf[st.locationKey]).toBe(sh.riderId);
   });
 });
 
