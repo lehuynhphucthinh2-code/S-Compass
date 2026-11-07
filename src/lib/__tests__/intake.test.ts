@@ -155,3 +155,36 @@ describe("success estimate explanation", () => {
   });
 });
 
+
+import { badDataScenario, fallbackLadder, overloadScenario, thinGroups } from "../risk";
+import { cardsFor } from "../demoState";
+import { makePlan } from "../planner";
+
+describe("risk desk scenarios", () => {
+  const st = initialState();
+  const cards = cardsFor(st);
+  const base = fixtures.shifts[0];
+  it("overload: 300 parcels plan without crashing and overflow is reported", () => {
+    const r = overloadScenario(base, 300, cards);
+    expect(r.plan.stops.length).toBe(300);
+    expect(r.onTime + r.overflow).toBe(300);
+    expect(r.overflow).toBeGreaterThan(0);
+    expect(r.ms).toBeLessThan(5000);
+  });
+  it("fallback ladder returns three methods", () => {
+    const rows = fallbackLadder(base, cards, st.stopStates[base.id]);
+    expect(rows.map((r) => r.method)).toEqual(["model", "rules", "baseline"]);
+  });
+  it("thin groups are sorted by fewest attempts", () => {
+    const plan = makePlan({ shift: base, method: "rules", cards, stopStates: st.stopStates[base.id] });
+    const t = thinGroups(base, plan);
+    for (let i = 1; i < t.length; i++) expect(t[i].attempts).toBeGreaterThanOrEqual(t[i - 1].attempts);
+  });
+  it("bad data: messy file is handled, empty and wrong columns give clear errors", () => {
+    const m = badDataScenario("messy");
+    expect(m.ok).toBe(true);
+    if (m.ok) expect(m.batch.summary.quarantined).toBeGreaterThan(0);
+    expect(badDataScenario("empty").ok).toBe(false);
+    expect(badDataScenario("columns").ok).toBe(false);
+  });
+});

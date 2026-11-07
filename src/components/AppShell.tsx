@@ -19,6 +19,7 @@ const NAV: { href: string; label: string; role?: Role }[] = [
   { href: "/stops", label: "Stop cards" },
   { href: "/buyer", label: "Buyer simulation", role: "buyer" },
   { href: "/replan", label: "Replanning" },
+  { href: "/risk", label: "Risk desk" },
   { href: "/evidence", label: "Evidence" },
   { href: "/how-it-works", label: "How it works" },
 ];
@@ -330,6 +331,7 @@ const BANNERS: Record<string, { title: string; text: string }> = {
   "/stops": { title: "Stop cards", text: "Local knowledge for each delivery site, checked before it is trusted." },
   "/buyer": { title: "Buyer simulation", text: "How a buyer confirms a delivery time. Simulated: no real messages are sent." },
   "/replan": { title: "Replanning", text: "When something changes, the app proposes a new plan and the dispatcher decides." },
+  "/risk": { title: "Risk desk", text: "Overload, AI uncertainty and bad data: what the system does, live." },
   "/evidence": { title: "Evidence", text: "Every action is logged, so the results can be checked." },
   "/how-it-works": { title: "How it works", text: "The data, the scorer and the rules behind each plan." },
 };
