@@ -133,7 +133,7 @@ export default function DispatcherPage() {
               ))}
             </div>
           </div>
-          <div className="ml-auto flex flex-wrap gap-2">
+          <div className="flex w-full flex-wrap items-center justify-end gap-2 border-t border-line/60 pt-4">
             <Button variant="primary" onClick={() => update((s) => generatePlan(s, s.method))}>
               <Sparkles /> Generate plan
             </Button>
@@ -256,7 +256,11 @@ export default function DispatcherPage() {
               {shown ? (
                 <ShiftRibbon plan={shown} states={states} clockMin={plan ? state.clockMin[shift.id] : undefined} onSelect={setSelected} selected={selected} />
               ) : (
-                <p className="text-sm text-ink-faint">Appears after you generate a plan.</p>
+                <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-line bg-canvas/40 px-4 py-8 text-center">
+                  <Sparkles className="size-5 text-brand" aria-hidden />
+                  <p className="text-sm font-medium text-ink">No plan yet</p>
+                  <p className="text-sm text-ink-faint">Press “Generate plan” to see the schedule for this shift.</p>
+                </div>
               )}
             </div>
           </Panel>

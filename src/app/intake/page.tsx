@@ -369,7 +369,7 @@ export default function IntakePage() {
       ) : null}
 
       <Panel>
-        <PanelHeader title="How each problem is handled" note="The AI never guesses missing information. It uses a stated fallback, asks the buyer, or hands the row to a dispatcher." />
+        <PanelHeader title="How each problem is handled" note="S-Compass never guesses missing information. It uses a stated fallback, asks the buyer, or hands the row to a dispatcher." />
         <Details label="Show all 13 rules" className="px-4 py-3">
         <div className="overflow-auto">
           <table className="w-full text-sm">
