@@ -70,9 +70,9 @@ export function ChanceText({ p }: { p: number | null }) {
 }
 
 export function MethodBadge({ method }: { method: PlanMethod }) {
-  if (method === "baseline") return <Badge tone="neutral">Baseline</Badge>;
-  if (method === "rules") return <Badge tone="info">Rules-based</Badge>;
-  return <Badge tone="warn">Model-assisted (experimental)</Badge>;
+  if (method === "baseline") return <Badge tone="neutral" title="Baseline">Today’s app</Badge>;
+  if (method === "rules") return <Badge tone="info" title="Rules-based planner">S-Compass</Badge>;
+  return <Badge tone="warn" title="Model-assisted planner (experimental)">AI model (test)</Badge>;
 }
 
 /** Small source label so every number says where it comes from. */

@@ -16,6 +16,7 @@ import { blockInfo, fmt } from "@/lib/time";
 import type { PlannedStop } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { Details, usePresent } from "@/state/PresentMode";
 
 const FAIL_REASONS = [
   "Buyer not available",
@@ -28,6 +29,7 @@ const FAIL_REASONS = [
 
 export default function RiderPage() {
   const { state, shift, cards, plan } = useDemo();
+  const { present } = usePresent();
   const [card, setCard] = React.useState<{ key: string; stopId: string } | null>(null);
   const [outcomeFor, setOutcomeFor] = React.useState<PlannedStop | null>(null);
   const [issueFor, setIssueFor] = React.useState<PlannedStop | null>(null);
@@ -66,7 +68,7 @@ export default function RiderPage() {
           <div className="flex items-center gap-1 text-lg font-semibold">
             <Clock className="size-4 text-ink-faint" /> {fmt(state.clockMin[shift.id])}
           </div>
-          <div className="text-[11px] text-ink-faint">simulated clock</div>
+          {present ? null : <div className="text-[11px] text-ink-faint">simulated clock</div>}
         </div>
       </div>
 
@@ -91,7 +93,9 @@ export default function RiderPage() {
             <div>
               <p className="text-xl font-semibold leading-7">{nextCard.name}</p>
               <p className="text-sm text-ink-soft">
-                {nextStop.buyer} · {TYPE_LABEL[nextStop.locationType]} · {nextStop.parcel}
+                {present ? "" : `${nextStop.buyer} · `}
+                {TYPE_LABEL[nextStop.locationType]}
+                {present ? "" : ` · ${nextStop.parcel}`}
                 {nextStop.payment === "cod" ? " · collect cash (COD)" : ""}
               </p>
             </div>
@@ -118,12 +122,21 @@ export default function RiderPage() {
               </p>
             </div>
             <div>
-              <p className="mb-1 text-xs font-medium text-ink-faint">Why this stop now</p>
+              <p className="mb-1 text-xs font-medium text-ink-faint">Why now</p>
               <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
-                {next.reasons.slice(0, 3).map((r) => (
+                {next.reasons.slice(0, present ? 1 : 3).map((r) => (
                   <li key={r}>{r}</li>
                 ))}
               </ul>
+              {present && next.reasons.length > 1 ? (
+                <Details label="More reasons" className="mt-1">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
+                    {next.reasons.slice(1, 3).map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                </Details>
+              ) : null}
               {next.flags.map((f) => (
                 <p key={f} className="mt-1 flex gap-1 text-sm text-bad">
                   <TriangleAlert className="mt-0.5 size-4 shrink-0" /> {f}

@@ -5,6 +5,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { AppShell } from "@/components/AppShell";
 import { DemoProvider } from "@/state/DemoProvider";
+import { PresentProvider } from "@/state/PresentMode";
 
 export const metadata: Metadata = {
   title: "S-Compass · competition prototype",
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <DemoProvider>
-          <AppShell>{children}</AppShell>
-        </DemoProvider>
+        <PresentProvider>
+          <DemoProvider>
+            <AppShell>{children}</AppShell>
+          </DemoProvider>
+        </PresentProvider>
       </body>
     </html>
   );

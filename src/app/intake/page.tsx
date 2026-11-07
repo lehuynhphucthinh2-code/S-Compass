@@ -10,8 +10,9 @@ import { Panel, PanelHeader } from "@/components/ui/panel";
 import { activeImportBatch, saveImportedLocal, setImported } from "@/lib/data";
 import { recordImport, recordImportRemoved, selectShift } from "@/lib/demoState";
 import { HEAVY_DAY_PARCELS, MAX_ROWS, messySampleRows, parseCsv, parseTable, templateRows, toCsvText, type ImportBatch, type RowStatus } from "@/lib/intake";
-import { downloadText } from "@/lib/utils";
+import { cn, downloadText } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { Details, usePresent } from "@/state/PresentMode";
 
 const STATUS_LABEL: Record<RowStatus, string> = { accepted: "Accepted", warning: "Accepted with warning", quarantined: "Quarantined" };
 const STATUS_TONE: Record<RowStatus, "ok" | "warn" | "bad"> = { accepted: "ok", warning: "warn", quarantined: "bad" };
@@ -54,6 +55,7 @@ async function readFile(file: File): Promise<{ rows: unknown[][]; sheet: string 
 
 export default function IntakePage() {
   const { state, update } = useDemo();
+  const { present } = usePresent();
   const router = useRouter();
   const [batch, setBatch] = React.useState<ImportBatch | null>(() => activeImportBatch());
   const [isActive, setIsActive] = React.useState<boolean>(() => activeImportBatch() !== null);
@@ -135,7 +137,11 @@ export default function IntakePage() {
       <Panel>
         <PanelHeader
           title="Data intake"
-          note="Bring orders from an outside Excel (.xlsx) or CSV file. Every row is checked before planning, and nothing is dropped silently: each row is accepted, accepted with a warning, or quarantined for a dispatcher."
+          note={
+            present
+              ? "Upload an Excel or CSV file. Every row is checked before planning. Nothing is dropped silently."
+              : "Bring orders from an outside Excel (.xlsx) or CSV file. Every row is checked before planning, and nothing is dropped silently: each row is accepted, accepted with a warning, or quarantined for a dispatcher."
+          }
         />
         <div className="flex flex-wrap items-center gap-3 px-4 py-4">
           <input ref={fileRef} type="file" accept=".xlsx,.csv,.txt" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} aria-label="Choose an Excel or CSV file" />
@@ -157,12 +163,14 @@ export default function IntakePage() {
             </Button>
           ) : null}
         </div>
-        <div className="border-t border-line px-4 py-3 text-xs leading-5 text-ink-faint">
+        <Details label="Which columns are needed?" className="border-t border-line px-4 py-3">
+        <div className={cn("text-xs leading-5 text-ink-faint", !present && "border-t border-line px-4 py-3")}>
           Needed: <b>delivery_date</b> and <b>location_type</b> (school, office, industrial, gated_facility). Used when present: order_id, rider_id, location_id or location_name, payment_type,
           parcel_type, address_latitude, address_longitude, buyer_address_processing_time_min, attempt_no, delivery_status, attempt_time. Column names from the Shopee case dataset are recognised, plus common
           English and Vietnamese names. The header can be in any of the first 10 rows; for Excel, the sheet that looks most like delivery data is used. The practice file is fictional. Imported data stays in
           this browser only.
         </div>
+        </Details>
       </Panel>
 
       {note ? <div className="rounded-lg border border-line bg-surface px-4 py-3 text-sm">{note}</div> : null}
@@ -191,7 +199,19 @@ export default function IntakePage() {
                 )
               }
             />
-            <div className="grid grid-cols-2 gap-4 px-4 py-3 sm:grid-cols-3 lg:grid-cols-6">
+            {present ? (
+              <div className="grid gap-3 px-4 py-4 sm:grid-cols-3">
+                <BigBox tone="ok" label="Accepted" value={s.accepted} sub="no problem found" />
+                <BigBox tone="warn" label="Accepted with warning" value={s.warning} sub="planned with a safe fallback" />
+                <BigBox tone="bad" label="Needs dispatcher" value={s.quarantined} sub="quarantined, not planned" />
+                <p className="text-sm text-ink-soft sm:col-span-3">
+                  {s.rowsRead.toLocaleString()} rows read → {s.riderDays} rider-day{s.riderDays === 1 ? "" : "s"}
+                  {s.heavyDays ? `, ${s.heavyDays} heavy` : ""}
+                  {s.notProcessed ? ` · ${s.notProcessed.toLocaleString()} rows not processed (batch limit)` : ""}
+                </p>
+              </div>
+            ) : null}
+            <div className={cn("grid grid-cols-2 gap-4 px-4 py-3 sm:grid-cols-3 lg:grid-cols-6", present && "hidden")}>
               <Stat label="Rows read" value={s.rowsRead.toLocaleString()} sub={s.notProcessed ? `${s.notProcessed.toLocaleString()} not processed` : "all rows checked"} />
               <Stat label="Accepted" value={s.accepted.toLocaleString()} sub="no problem found" />
               <Stat label="Accepted with warning" value={s.warning.toLocaleString()} sub="planned, with a safe fallback" />
@@ -206,7 +226,7 @@ export default function IntakePage() {
                 ))}
               </ul>
             ) : null}
-            <div className="border-t border-line px-4 py-2 text-xs text-ink-faint">
+            <div className={cn("border-t border-line px-4 py-2 text-xs text-ink-faint", present && "hidden")}>
               <SourceTag kind="live" /> Columns used:{" "}
               {Object.entries(batch.columns)
                 .map(([f, c]) => `${c} → ${f}`)
@@ -292,6 +312,7 @@ export default function IntakePage() {
 
       <Panel>
         <PanelHeader title="How each problem is handled" note="The AI never guesses missing information. It uses a stated fallback, asks the buyer, or hands the row to a dispatcher." />
+        <Details label="Show all 13 rules" className="px-4 py-3">
         <div className="overflow-auto">
           <table className="w-full text-sm">
             <thead className="bg-canvas text-left text-xs text-ink-faint">
@@ -312,10 +333,22 @@ export default function IntakePage() {
             </tbody>
           </table>
         </div>
+        </Details>
         <div className="border-t border-line px-4 py-2 text-xs text-ink-faint">
           Session: {state.sessionId.slice(-6)} · every import and removal is written to the Evidence log.
         </div>
       </Panel>
+    </div>
+  );
+}
+
+function BigBox({ tone, label, value, sub }: { tone: "ok" | "warn" | "bad"; label: string; value: number; sub: string }) {
+  const c = { ok: "border-ok/40 bg-ok-tint text-ok", warn: "border-warn/40 bg-warn-tint text-warn", bad: "border-bad/40 bg-bad-tint text-bad" }[tone];
+  return (
+    <div className={cn("rounded-xl border px-4 py-3", c)}>
+      <div className="text-sm font-semibold">{label}</div>
+      <div className="text-4xl font-semibold leading-tight">{value.toLocaleString()}</div>
+      <div className="text-xs opacity-90">{sub}</div>
     </div>
   );
 }

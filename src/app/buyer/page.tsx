@@ -14,9 +14,11 @@ import { BLOCKS, blockLabel } from "@/lib/time";
 import type { Block } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { usePresent } from "@/state/PresentMode";
 
 export default function BuyerPage() {
   const { state, update, shift, cards, plan } = useDemo();
+  const { present } = usePresent();
   const shown = plan ?? (state.draftPlan?.shiftId === shift.id ? state.draftPlan : null);
   const states = state.stopStates[shift.id];
   const pendingStops = shift.stops.filter((s) => states[s.id].status === "pending");
@@ -41,11 +43,11 @@ export default function BuyerPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-warn/40 bg-warn-tint px-4 py-2 text-sm text-warn">
-        Demo interaction: you act as the buyer. Messages are simulated inside this page; no SMS, e-mail or payment request is sent.
+        {present ? "Demo: you play the buyer. No real message is sent." : "Demo interaction: you act as the buyer. Messages are simulated inside this page; no SMS, e-mail or payment request is sent."}
       </div>
       <div className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
         <Panel>
-          <PanelHeader title="Choose a demo order" note="Buyer Confirm targets risky orders first (rule shown under each order)" />
+          <PanelHeader title="Choose an order" note={present ? "Risky orders are listed first" : "Buyer Confirm targets risky orders first (rule shown under each order)"} />
           <div className="max-h-[620px] overflow-y-auto">
             <OrderGroup title={`Eligible for Buyer Confirm (${eligible.length})`} items={eligible} sel={sel} setSel={setSel} />
             <OrderGroup title={`Other pending orders (${others.length})`} items={others} sel={sel} setSel={setSel} />

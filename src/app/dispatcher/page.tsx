@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, BarChart3, Info, Send, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, BarChart3, Check, FileUp, Info, Send, Sparkles, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { BlockTag, CardStatusBadge, ChanceText, EmptyState, MethodBadge, SourceTag, Stat, TYPE_LABEL } from "@/components/bits";
@@ -20,11 +20,13 @@ import { fmt } from "@/lib/time";
 import type { Plan, PlanMethod, PlannedStop } from "@/lib/types";
 import { cn, pct } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { Details, Hint, usePresent } from "@/state/PresentMode";
 
 type Filter = "all" | "pending" | "risk" | "done";
 
 export default function DispatcherPage() {
   const { state, update, shift, cards, plan } = useDemo();
+  const { present } = usePresent();
   const [filter, setFilter] = React.useState<Filter>("all");
   const [cardOpen, setCardOpen] = React.useState<{ key: string; stopId: string } | null>(null);
   const [compareOpen, setCompareOpen] = React.useState(false);
@@ -58,9 +60,11 @@ export default function DispatcherPage() {
     : [];
 
   const setMethod = (m: PlanMethod) => update((s) => ({ ...s, method: m }));
+  const compared = !!state.comparison && state.comparison[0]?.shiftId === shift.id;
 
   return (
     <div className="space-y-5">
+      <StartHere generated={!!shown} compared={compared} dispatched={!!plan} />
       {/* Shift and planning controls */}
       <Panel>
         <div className="flex flex-wrap items-end gap-4 px-4 py-4">
@@ -80,7 +84,7 @@ export default function DispatcherPage() {
                 </option>
               ))}
             </select>
-            <div className="mt-1 text-xs text-ink-faint">Demo persona: new rider. Tenure is not in the dataset.</div>
+            {present ? null : <div className="mt-1 text-xs text-ink-faint">Demo persona: new rider. Tenure is not in the dataset.</div>}
           </div>
           <div>
             <label htmlFor="shift" className="text-xs text-ink-faint">
@@ -101,10 +105,12 @@ export default function DispatcherPage() {
                 );
               })}
             </select>
-            <div className="mt-1 text-xs text-ink-faint">{shift.id.startsWith("imp-") ? "A rider-day from the imported file (see Data intake)" : "A real rider-day from the dataset, de-identified"}</div>
+            <div className={cn("mt-1 text-xs text-ink-faint", present && "hidden")}>{shift.id.startsWith("imp-") ? "A rider-day from the imported file (see Data intake)" : "A real rider-day from the dataset, de-identified"}</div>
           </div>
           <div className="text-sm" role="group" aria-label="Planning method">
-            <div className="text-xs text-ink-faint">Planning method</div>
+            <div className="flex items-center gap-1 text-xs text-ink-faint">
+              Planning method <Hint text="Today’s app = nearest map pin next (our Baseline). S-Compass = each stop in its best time block, using the AI scorer and site rules (Rules-based). AI model (test) = same rules, but an experimental learned model picks the block." />
+            </div>
             <div className="mt-1 inline-flex rounded-lg border border-line p-0.5">
               {(["baseline", "rules", "model"] as PlanMethod[]).map((mm) => (
                 <button
@@ -114,7 +120,7 @@ export default function DispatcherPage() {
                   onClick={() => setMethod(mm)}
                   className={cn("rounded-md px-3 py-1.5 text-sm", state.method === mm ? "bg-ink text-white" : "text-ink-soft hover:text-ink")}
                 >
-                  {mm === "baseline" ? "Baseline" : mm === "rules" ? "Rules-based" : "Model (experimental)"}
+                  {mm === "baseline" ? "Today’s app" : mm === "rules" ? "S-Compass" : "AI model (test)"}
                 </button>
               ))}
             </div>
@@ -139,18 +145,31 @@ export default function DispatcherPage() {
           </div>
         </div>
         <p className="border-t border-line px-4 py-2 text-xs text-ink-faint">
-          {state.method === "baseline" && "Baseline copies today's routing app: nearest map pin next, no receiving windows or site notes."}
-          {state.method === "rules" &&
-            "Rules-based planner (non-AI): picks each stop's delivery block from the dataset history table, applies verified site rules and buyer confirmations, checks block time capacity, then orders stops by distance."}
-          {state.method === "model" &&
-            "Model-assisted planner: same constraints, but block choice uses a logistic-regression success model. On the October holdout it did not beat the history table, so it is shown as an experiment."}{" "}
+          {present ? (
+            <>
+              {state.method === "baseline" && "Today’s app: nearest map pin next. It does not know when places can receive."}
+              {state.method === "rules" && "S-Compass: each stop goes to the time block with the best chance, then site rules and capacity are checked."}
+              {state.method === "model" && "AI model (test): same rules, but a learned model picks the time block. Shown as a test only."}
+            </>
+          ) : (
+            <>
+              {state.method === "baseline" && "Baseline copies today's routing app: nearest map pin next, no receiving windows or site notes."}
+              {state.method === "rules" &&
+                "Rules-based planner: picks each stop's delivery block using the AI scorer's chances (the history table learned from the dataset), applies verified site rules and buyer confirmations, checks block time capacity, then orders stops by distance."}
+              {state.method === "model" &&
+                "Model-assisted planner: same constraints, but block choice uses a logistic-regression success model. On the October holdout it did not beat the history table, so it is shown as an experiment."}
+            </>
+          )}{" "}
           <Link href="/how-it-works" className="text-info underline underline-offset-2">
             How it works
           </Link>
         </p>
       </Panel>
 
+      {present ? <Glance shown={shown} parcels={shift.stops.length} risk={riskCount} draft={!!draft} /> : null}
+
       {/* Three separate evidence groups — never mixed into one KPI */}
+      <Details label="Show dataset history, estimates and live activity">
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel>
           <PanelHeader title="Dataset history" note={`${historical.orders.toLocaleString()} orders, ${historical.period.from} to ${historical.period.to}`} actions={<SourceTag kind="dataset" />} />
@@ -196,6 +215,7 @@ export default function DispatcherPage() {
           </div>
         </Panel>
       </div>
+      </Details>
 
       {openProposal || pendingCorrections.length ? (
         <div className="flex flex-wrap gap-3">
@@ -246,16 +266,16 @@ export default function DispatcherPage() {
                 ))}
               </div>
               <div className="max-h-[760px] overflow-auto">
-                <table className="w-full min-w-[820px] text-sm">
+                <table className={cn("w-full text-sm", present ? "min-w-[620px]" : "min-w-[820px]")}>
                   <thead className="sticky top-0 z-[1] bg-surface text-left text-xs text-ink-faint">
                     <tr className="border-b border-line">
                       <th className="px-3 py-2 font-normal">#</th>
                       <th className="px-3 py-2 font-normal">Parcel</th>
-                      <th className="px-3 py-2 font-normal">Location</th>
-                      <th className="px-3 py-2 font-normal">Payment</th>
-                      <th className="px-3 py-2 font-normal">Block and ETA</th>
+                      <th className="px-3 py-2 font-normal">{present ? "Place" : "Location"}</th>
+                      {present ? null : <th className="px-3 py-2 font-normal">Payment</th>}
+                      <th className="px-3 py-2 font-normal">{present ? "Time" : "Block and ETA"}</th>
                       <th className="px-3 py-2 font-normal">Chance</th>
-                      <th className="px-3 py-2 font-normal">Knowledge</th>
+                      {present ? null : <th className="px-3 py-2 font-normal">Knowledge</th>}
                       <th className="px-3 py-2 font-normal">Status</th>
                       <th className="px-3 py-2 font-normal">
                         <span className="sr-only">Actions</span>
@@ -277,7 +297,7 @@ export default function DispatcherPage() {
                           <td className="px-3 py-2.5 text-ink-faint">{ps.seq}</td>
                           <td className="px-3 py-2.5">
                             <div className="font-medium">{ps.stopId}</div>
-                            <div className="text-xs text-ink-faint">{st.buyer}</div>
+                            {present ? null : <div className="text-xs text-ink-faint">{st.buyer}</div>}
                             {st.isReattempt ? <div className="text-xs text-warn">Re-attempt</div> : null}
                           </td>
                           <td className="px-3 py-2.5">
@@ -291,11 +311,12 @@ export default function DispatcherPage() {
                               {card.name}
                             </button>
                             <div className="text-xs text-ink-faint">
-                              {TYPE_LABEL[st.locationType]} · {st.parcel}
+                              {TYPE_LABEL[st.locationType]}
+                              {present ? (st.payment === "cod" ? " · COD" : "") : ` · ${st.parcel}`}
                               {!st.pin ? " · no map pin" : ""}
                             </div>
                           </td>
-                          <td className="px-3 py-2.5">{st.payment === "cod" ? <Badge tone="warn">COD</Badge> : <span className="text-ink-soft">Prepaid</span>}</td>
+                          {present ? null : <td className="px-3 py-2.5">{st.payment === "cod" ? <Badge tone="warn">COD</Badge> : <span className="text-ink-soft">Prepaid</span>}</td>}
                           <td className="px-3 py-2.5">
                             {Number.isNaN(ps.arriveMin) ? <span className="text-bad">Not scheduled</span> : <BlockTag block={ps.block} eta={ps.arriveMin} />}
                             {buyer.kind === "confirmed" || buyer.kind === "changed" ? <div className="text-xs text-ok">Buyer confirmed</div> : null}
@@ -306,9 +327,11 @@ export default function DispatcherPage() {
                           <td className="px-3 py-2.5">
                             <ChanceText p={ps.p} />
                           </td>
-                          <td className="px-3 py-2.5">
-                            <CardStatusBadge status={card.status} />
-                          </td>
+                          {present ? null : (
+                            <td className="px-3 py-2.5">
+                              <CardStatusBadge status={card.status} />
+                            </td>
+                          )}
                           <td className="px-3 py-2.5">
                             {ss.status === "pending" ? (
                               ps.flags.length ? (
@@ -364,7 +387,7 @@ export default function DispatcherPage() {
               >
                 {shift.stops.length} parcels are loaded for {rider.label}. Generate a plan, compare the three methods, then dispatch one to the rider.
               </EmptyState>
-              <ul className="mt-4 grid gap-1 text-sm sm:grid-cols-2">
+              <ul className={cn("mt-4 grid gap-1 text-sm sm:grid-cols-2", present && "hidden")}>
                 {shift.stops.map((s) => (
                   <li key={s.id} className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-canvas">
                     <button className="text-left" onClick={() => setCardOpen({ key: s.locationKey, stopId: s.id })}>
@@ -382,7 +405,7 @@ export default function DispatcherPage() {
 
         <div className="space-y-5">
           <Panel>
-            <PanelHeader title="Shift timeline" note="Each mark is a stop at its simulated arrival time" actions={<SourceTag kind="simulated" />} />
+            <PanelHeader title="Shift timeline" note={present ? "One mark per stop" : "Each mark is a stop at its simulated arrival time"} actions={<SourceTag kind="simulated" />} />
             <div className="px-4 py-3">
               {shown ? (
                 <ShiftRibbon plan={shown} states={states} clockMin={plan ? state.clockMin[shift.id] : undefined} onSelect={setSelected} selected={selected} />
@@ -392,7 +415,7 @@ export default function DispatcherPage() {
             </div>
           </Panel>
           <Panel>
-            <PanelHeader title="Route" note="Click a stop to highlight it in the list" />
+            <PanelHeader title="Route" note={present ? undefined : "Click a stop to highlight it in the list"} />
             <div className="px-4 py-3">
               <RouteMap riderId={rider.id} plan={shown} states={states} selected={selected} onSelect={setSelected} />
             </div>
@@ -451,6 +474,7 @@ function SelectedStop({ ps, onOpen }: { ps?: PlannedStop; onOpen: () => void }) 
 
 function CompareDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { state, update } = useDemo();
+  const { present } = usePresent();
   const plans = state.comparison ?? [];
   const best = plans.length ? Math.max(...plans.map((p) => p.totals.expectedSuccess)) : 0;
   const rows: { label: string; get: (p: Plan) => string; note?: string }[] = [
@@ -469,6 +493,8 @@ function CompareDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
       <DialogContent title="Compare plans" description="Same parcels, same rider, same start. All figures are simulated estimates, not measured results." wide>
         {plans.length ? (
           <>
+            <CompareCards plans={plans} onUse={(p) => update((s) => ({ ...s, method: p.method, draftPlan: p }))} />
+            <Details label="Show the full table (all three plans)" className="mt-4">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
@@ -518,6 +544,7 @@ function CompareDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
                 small differences here are not evidence that AI is better. The pilot is designed to test that question.
               </p>
             </div>
+            </Details>
           </>
         ) : (
           <p className="text-sm text-ink-faint">Run Compare plans to see the three methods side by side.</p>
@@ -549,5 +576,134 @@ function TransferDialog({ stopId, riderName, onClose, onConfirm }: { stopId: str
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** The two plans that matter on stage: today's logic vs S-Compass, with three numbers each. */
+function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => void }) {
+  const today = plans.find((p) => p.method === "baseline");
+  const sc = plans.find((p) => p.method === "rules");
+  const ai = plans.find((p) => p.method === "model");
+  if (!today || !sc) return null;
+  const late = (p: Plan) => p.totals.endMin > 20 * 60 + 30;
+  const items: { label: string; a: string; b: string; better: boolean }[] = [
+    { label: "Expected successful first attempts", a: today.totals.expectedSuccess.toFixed(1), b: sc.totals.expectedSuccess.toFixed(1), better: sc.totals.expectedSuccess > today.totals.expectedSuccess },
+    { label: "Estimated finish", a: fmt(today.totals.endMin), b: fmt(sc.totals.endMin), better: sc.totals.endMin < today.totals.endMin },
+    { label: "Stops at a low-chance time", a: String(today.totals.lowChance), b: String(sc.totals.lowChance), better: sc.totals.lowChance < today.totals.lowChance },
+  ];
+  return (
+    <div>
+      <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
+        <div className="rounded-xl border border-line bg-canvas p-4">
+          <div className="text-sm font-semibold text-ink-soft">Today’s app</div>
+          <div className="text-xs text-ink-faint">Nearest map pin next</div>
+          <dl className="mt-3 space-y-3">
+            {items.map((x) => (
+              <div key={x.label}>
+                <dt className="text-xs text-ink-faint">{x.label}</dt>
+                <dd className="text-3xl font-semibold text-ink-soft">{x.a}</dd>
+              </div>
+            ))}
+          </dl>
+          {late(today) ? <div className="mt-3 text-sm font-medium text-bad">Ends after the 20:30 shift end</div> : null}
+        </div>
+        <div className="hidden items-center md:flex">
+          <ArrowRight className="size-8 text-ink-faint" aria-hidden />
+        </div>
+        <div className="rounded-xl border-2 border-brand bg-brand-tint/40 p-4">
+          <div className="text-sm font-semibold text-brand-ink">S-Compass</div>
+          <div className="text-xs text-ink-faint">Best time block for each stop</div>
+          <dl className="mt-3 space-y-3">
+            {items.map((x) => (
+              <div key={x.label}>
+                <dt className="text-xs text-ink-faint">{x.label}</dt>
+                <dd className="flex items-baseline gap-2 text-3xl font-semibold">
+                  {x.b}
+                  {x.better ? <span className="text-sm font-medium text-ok">better</span> : null}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {late(sc) ? <div className="mt-3 text-sm font-medium text-bad">Ends after the 20:30 shift end: dispatcher review</div> : null}
+          <DialogClose asChild>
+            <Button variant="primary" className="mt-4 w-full" onClick={() => onUse(sc)}>
+              Use the S-Compass plan
+            </Button>
+          </DialogClose>
+        </div>
+      </div>
+      {ai ? (
+        <p className="mt-3 text-xs text-ink-faint">
+          AI model (test): {ai.totals.expectedSuccess.toFixed(1)} expected · finish {fmt(ai.totals.endMin)}. Shown as a test only; S-Compass rules stay the default.
+        </p>
+      ) : null}
+      <p className="mt-1 text-xs text-ink-faint">Simulated estimates on the same rider-day. Same parcels, same scorer, same 08:00 start.</p>
+    </div>
+  );
+}
+
+/** “Start here”: the main demo path in four steps, ticked as they are done. */
+function StartHere({ generated, compared, dispatched }: { generated: boolean; compared: boolean; dispatched: boolean }) {
+  const steps = [
+    { n: 1, text: "Pick a rider and day", done: true },
+    { n: 2, text: "Generate plan", done: generated },
+    { n: 3, text: "Compare with today’s app", done: compared },
+    { n: 4, text: "Dispatch to rider", done: dispatched },
+  ];
+  const next = steps.find((x) => !x.done)?.n;
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl border border-line bg-surface px-4 py-3">
+      <span className="mr-1 text-sm font-semibold">Start here</span>
+      {steps.map((x, i) => (
+        <React.Fragment key={x.n}>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm",
+              x.done ? "bg-ok-tint text-ok" : x.n === next ? "bg-brand text-white" : "bg-canvas text-ink-faint",
+            )}
+          >
+            {x.done ? <Check className="size-4" aria-hidden /> : <span className="font-semibold">{x.n}</span>}
+            {x.text}
+            {x.done ? <span className="sr-only">(done)</span> : null}
+          </span>
+          {i < steps.length - 1 ? <ArrowRight className="size-4 text-ink-faint" aria-hidden /> : null}
+        </React.Fragment>
+      ))}
+      <Link href="/intake" className="ml-auto inline-flex items-center gap-1.5 text-sm text-info hover:underline">
+        <FileUp className="size-4" aria-hidden /> Have an Excel or CSV file? Data intake
+      </Link>
+    </div>
+  );
+}
+
+/** Presentation mode: the three numbers that matter, in big type. */
+function Glance({ shown, parcels, risk, draft }: { shown: Plan | null; parcels: number; risk: number; draft: boolean }) {
+  const late = shown ? shown.totals.endMin > 20 * 60 + 30 : false;
+  const box = "rounded-xl border border-line bg-surface px-4 py-3";
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={box}>
+        <div className="text-xs text-ink-faint">Parcels today</div>
+        <div className="text-3xl font-semibold">{parcels}</div>
+      </div>
+      <div className={box}>
+        <div className="flex items-center gap-1 text-xs text-ink-faint">
+          Expected successes <Hint text="Sum of each stop’s chance of success on the first try. Simulated estimate from the AI scorer, not a measured result." />
+        </div>
+        <div className="text-3xl font-semibold text-brand-ink">{shown ? shown.totals.expectedSuccess.toFixed(1) : "—"}</div>
+      </div>
+      <div className={box}>
+        <div className="text-xs text-ink-faint">Estimated finish</div>
+        <div className={cn("text-3xl font-semibold", late && "text-bad")}>{shown ? fmt(shown.totals.endMin) : "—"}</div>
+        {late ? <div className="text-xs font-medium text-bad">After 20:30: dispatcher review</div> : null}
+      </div>
+      <div className={box}>
+        <div className="flex items-center gap-1 text-xs text-ink-faint">
+          Stops at risk <Hint text="Stops planned where history shows under 65% chance, or stops with a warning such as no map pin." />
+        </div>
+        <div className={cn("text-3xl font-semibold", risk > 0 && "text-warn")}>{shown ? risk : "—"}</div>
+        {shown ? <div className="text-xs text-ink-faint">{draft ? "Draft plan · simulated" : "Dispatched plan · simulated"}</div> : null}
+      </div>
+    </div>
   );
 }

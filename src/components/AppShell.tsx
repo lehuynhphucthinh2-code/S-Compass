@@ -10,6 +10,7 @@ import { setTester } from "@/lib/demoState";
 import type { Role } from "@/lib/evidence";
 import { cn } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { usePresent } from "@/state/PresentMode";
 
 const NAV: { href: string; label: string; role?: Role }[] = [
   { href: "/dispatcher", label: "Dispatcher", role: "dispatcher" },
@@ -37,6 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (item?.role) update((s) => (s.role === item.role ? s : { ...s, role: item.role! }));
   }, [pathname, update]);
 
+  const { present } = usePresent();
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
@@ -52,6 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            <PresentToggle />
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium",
@@ -62,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {adapter.mode === "local" ? <HardDrive className="size-3.5" /> : <Database className="size-3.5" />}
               {adapter.mode === "local" ? "Demo Mode" : "Supabase"}
             </span>
-            <label className="flex items-center gap-1.5 text-xs text-ink-faint">
+            <label className={cn("flex items-center gap-1.5 text-xs text-ink-faint", present && "hidden")}>
               <span className="hidden sm:inline">Demo role</span>
               <select
                 aria-label="Demo role switcher (demo interaction, not a permission system)"
@@ -76,14 +79,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <option value="buyer">Buyer</option>
               </select>
             </label>
-            <TesterButton />
+            {present ? null : <TesterButton />}
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost" aria-label="Reset demo">
                   <RotateCcw /> Reset demo
                 </Button>
               </DialogTrigger>
-              <DialogContent title="Reset the demo?" description="This restores the original fixtures and clears plans, corrections, buyer replies and the evidence log in this browser.">
+              <DialogContent title="Reset the demo?" description="This restores the original fixtures and clears plans, corrections, buyer replies, imported data and the evidence log in this browser.">
                 <p className="mb-4 text-sm text-ink-soft">Export the evidence log first if you need it for your test records.</p>
                 <div className="flex justify-end gap-2">
                   <DialogClose asChild>
@@ -194,5 +197,24 @@ function TesterButton() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function PresentToggle() {
+  const { present, setPresent } = usePresent();
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={present}
+      onClick={() => setPresent(!present)}
+      title="Presentation mode: short labels and big numbers. Turn off to see every detail."
+      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", present ? "border-brand bg-brand-tint text-brand-ink" : "border-line text-ink-soft")}
+    >
+      <span className={cn("relative h-4 w-7 rounded-full transition-colors", present ? "bg-brand" : "bg-line")}>
+        <span className={cn("absolute top-0.5 size-3 rounded-full bg-white transition-all", present ? "left-3.5" : "left-0.5")} />
+      </span>
+      Presentation {present ? "on" : "off"}
+    </button>
   );
 }
