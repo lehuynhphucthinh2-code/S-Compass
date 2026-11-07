@@ -11,11 +11,13 @@ import { decideCorrection } from "@/lib/demoState";
 import type { CardStatus } from "@/lib/types";
 import { cn, pct } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
+import { usePresent } from "@/state/PresentMode";
 
 const ORDER: CardStatus[] = ["disputed", "unverified", "suggested", "verified"];
 
 export default function StopsPage() {
   const { state, update, cards, shift } = useDemo();
+  const { present } = usePresent();
   const [open, setOpen] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<CardStatus | "all">("all");
   const pending = state.corrections.filter((c) => c.status === "pending" && cards[c.locationKey] && knowledgeForRider(riderOfShift(shift).id).some((k) => k.key === c.locationKey));
@@ -36,8 +38,7 @@ export default function StopsPage() {
         <div>
           <h1 className="text-xl font-semibold">Stop Knowledge Map · {rider.zoneLabel}</h1>
           <p className="max-w-3xl text-sm text-ink-soft">
-            One card per delivery site in the zone of {rider.label} ({zoneCards.length} sites). Change the rider on the Dispatcher screen to see another zone. Cards start from dataset notes (suggested) and only become verified after a rider confirms on site and a
-            dispatcher approves. A dataset coordinate is never treated as a verified entrance.
+            {present ? `One card per delivery site (${zoneCards.length} sites). Click a card to see everything about it.` : `One card per delivery site in the zone of ${rider.label} (${zoneCards.length} sites). Change the rider on the Dispatcher screen to see another zone. Cards start from dataset notes (suggested) and only become verified after a rider confirms on site and a dispatcher approves. A dataset coordinate is never treated as a verified entrance.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
@@ -56,22 +57,28 @@ export default function StopsPage() {
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((c) => (
             <li key={c.key}>
-              <button onClick={() => setOpen(c.key)} className="h-full w-full rounded-xl border border-line bg-surface p-4 text-left hover:border-ink-faint">
+              <button onClick={() => setOpen(c.key)} className={cn("h-full w-full rounded-xl border border-line bg-surface p-4 text-left hover:border-ink-faint", present && "py-3")}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold leading-5">{c.name}</span>
                   <CardStatusBadge status={c.status} />
                 </div>
-                <p className="mt-0.5 text-xs text-ink-faint">
-                  {TYPE_LABEL[c.type]} · {c.visits} dataset visits · {ordersToday(c.key)} {ordersToday(c.key) === 1 ? "order" : "orders"} in this shift
-                </p>
-                <p className="mt-2 text-sm">{c.entrance}</p>
-                <p className="text-sm text-ink-soft">{c.handover}</p>
-                {c.restrictions.length ? (
-                  <p className="mt-1 text-xs text-warn">{c.restrictions.map((r) => r.text).join("; ")}</p>
-                ) : null}
-                <p className="mt-2 text-xs text-ink-faint">
-                  Pin spread {c.pinSpreadMeters ?? "—"} m · first-attempt success {pct(zoneKnowledge.find((k) => k.key === c.key)!.firstAttemptSuccess)} · last verified {c.lastVerified ?? "never"}
-                </p>
+                {present ? (
+                  <p className="mt-1 text-xs text-ink-faint">Click to see all details</p>
+                ) : (
+                  <>
+                  <p className="mt-0.5 text-xs text-ink-faint">
+                    {TYPE_LABEL[c.type]} · {c.visits} dataset visits · {ordersToday(c.key)} {ordersToday(c.key) === 1 ? "order" : "orders"} in this shift
+                  </p>
+                  <p className="mt-2 text-sm">{c.entrance}</p>
+                  <p className="text-sm text-ink-soft">{c.handover}</p>
+                  {c.restrictions.length ? (
+                    <p className="mt-1 text-xs text-warn">{c.restrictions.map((r) => r.text).join("; ")}</p>
+                  ) : null}
+                  <p className="mt-2 text-xs text-ink-faint">
+                    Pin spread {c.pinSpreadMeters ?? "—"} m · first-attempt success {pct(zoneKnowledge.find((k) => k.key === c.key)!.firstAttemptSuccess)} · last verified {c.lastVerified ?? "never"}
+                  </p>
+                  </>
+                )}
               </button>
             </li>
           ))}
