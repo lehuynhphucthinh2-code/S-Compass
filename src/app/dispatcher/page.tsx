@@ -31,6 +31,12 @@ export default function DispatcherPage() {
   const [filter, setFilter] = React.useState<Filter>("all");
   const [cardOpen, setCardOpen] = React.useState<{ key: string; stopId: string } | null>(null);
   const [compareOpen, setCompareOpen] = React.useState(false);
+  const [sent, setSent] = React.useState(false);
+  React.useEffect(() => {
+    if (!sent) return;
+    const t = setTimeout(() => setSent(false), 3500);
+    return () => clearTimeout(t);
+  }, [sent]);
   const [transferStop, setTransferStop] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<string | null>(null);
 
@@ -140,9 +146,19 @@ export default function DispatcherPage() {
               <BarChart3 /> Compare plans
             </Button>
             {draft ? (
-              <Button variant="dark" onClick={() => update((s) => dispatchPlan(s, draft))}>
+              <Button
+                variant="dark"
+                onClick={() => {
+                  update((s) => dispatchPlan(s, draft));
+                  setSent(true);
+                }}
+              >
                 <Send /> Dispatch to rider
               </Button>
+            ) : sent ? (
+              <span role="status" className="sc-pop inline-flex h-10 items-center gap-2 rounded-lg bg-ok-tint px-3 text-sm font-semibold text-ok">
+                <Check className="size-4" /> Sent to rider
+              </span>
             ) : null}
           </div>
         </div>

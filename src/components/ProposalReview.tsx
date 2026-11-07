@@ -27,7 +27,7 @@ export function ProposalReview({ proposal, compact }: { proposal: ReplanProposal
           const ps = plan.stops.find((x) => x.stopId === id);
           const eta = ps && !Number.isNaN(ps.arriveMin) ? fmt(ps.arriveMin) : "not scheduled";
           return (
-            <li key={id} className={cn("flex gap-2 rounded px-1", changed.has(id) && "bg-brand-tint")}>
+            <li key={id} className={cn("flex gap-2 rounded px-1", changed.has(id) && "sc-flash bg-brand-tint")} style={changed.has(id) ? { ["--d" as string]: `${Math.min(i * 0.06, 0.8)}s` } : undefined}>
               <span className="w-5 shrink-0 text-right text-ink-faint">{i + 1}</span>
               <span className="min-w-0 flex-1 truncate">
                 {id} <span className="text-ink-faint">{name(id)}</span>
@@ -111,7 +111,7 @@ export function ProposalReview({ proposal, compact }: { proposal: ReplanProposal
           </div>
         )
       ) : (
-        <p className={cn("text-sm font-medium", proposal.status === "accepted" ? "text-ok" : "text-ink-soft")}>
+        <p className={cn("sc-fade text-sm font-medium", proposal.status === "accepted" ? "text-ok" : "text-ink-soft")}>
           {proposal.status === "accepted" ? "Accepted" : "Overridden"}
           {proposal.decisionNote ? `: ${proposal.decisionNote}` : ""}
         </p>

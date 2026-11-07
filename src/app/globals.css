@@ -70,6 +70,8 @@ body {
 .sc-pop { transform-box: fill-box; transform-origin: center; animation: sc-pop 0.3s ease-out var(--d, 0s) backwards; }
 .sc-fade { animation: sc-fade 0.35s ease-out var(--d, 0s) backwards; }
 .sc-grow { transform-origin: left center; animation: sc-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) backwards; }
+@keyframes sc-flash { 0% { background-color: rgba(238, 77, 45, 0.45); } 100% { background-color: rgba(253, 238, 233, 1); } }
+.sc-flash { animation: sc-flash 1.1s ease-out var(--d, 0s) backwards; }
 .sc-ring { transform-box: fill-box; transform-origin: center; animation: sc-ring 1.1s ease-out 2; }
 
 html[data-anim="off"] *,
