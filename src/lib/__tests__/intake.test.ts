@@ -188,3 +188,21 @@ describe("risk desk scenarios", () => {
     expect(badDataScenario("columns").ok).toBe(false);
   });
 });
+
+describe("case and spaces in ids", () => {
+  it("treats ' ord-1 ' and 'ORD-1' as the same order, and 'r-a' and 'R-A' as one rider", () => {
+    const rows = [
+      ["order_id", "rider_id", "delivery_date", "location_id", "location_type", "payment_type"],
+      ["ORD-1", "R-A", "2026-10-20", "S1", "school", "cod"],
+      [" ord-1 ", "r-a", "2026-10-20", "S1", "school", "cod"],
+      ["ORD-2", " r-a ", "2026-10-20", "S1", "school", "cod"],
+    ];
+    const r = parseTable(rows, "t.csv");
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.batch.summary.quarantined).toBe(1);
+      expect(r.batch.shifts.length).toBe(1);
+      expect(r.batch.shifts[0].stops.length).toBe(2);
+    }
+  });
+});

@@ -339,8 +339,9 @@ export function parseTable(
     const issues: string[] = [];
     let quarantine = false;
 
-    const orderId = str(cell(r, "order_id")) || `row-${rowNo}`;
-    let riderId = map.rider_id === undefined ? "IMPORTED" : str(cell(r, "rider_id"));
+    // Capital letters and extra spaces do not make a different order or rider.
+    const orderId = str(cell(r, "order_id")).replace(/\s+/g, " ").toUpperCase() || `row-${rowNo}`;
+    let riderId = map.rider_id === undefined ? "IMPORTED" : str(cell(r, "rider_id")).replace(/\s+/g, " ").toUpperCase();
     if (!riderId) {
       quarantine = true;
       issues.push("No rider: the dispatcher must assign one");
