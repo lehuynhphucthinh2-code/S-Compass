@@ -17,11 +17,11 @@ import { comparePlans, dispatchPlan, generatePlan, selectRider, selectShift, tra
 import { metrics } from "@/lib/evidence";
 import { METHOD_LABEL } from "@/lib/planner";
 import { explainTable } from "@/lib/successTable";
-import { blockLabel, fmt } from "@/lib/time";
+import { SHIFT_START, blockLabel, fmt } from "@/lib/time";
 import type { FixtureStop, Plan, PlanMethod, PlannedStop } from "@/lib/types";
 import { cn, pct } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
-import { Details, Hint, usePresent } from "@/state/PresentMode";
+import { CountUp, Details, Hint, usePresent } from "@/state/PresentMode";
 
 type Filter = "all" | "pending" | "risk" | "done";
 
@@ -234,6 +234,17 @@ export default function DispatcherPage() {
         </div>
       ) : null}
 
+      <Panel>
+            <PanelHeader title="Shift timeline" note={present ? "One bar per stop, by time of day" : "Each bar is a stop: it starts at its simulated arrival and lasts as long as the handover"} actions={<SourceTag kind="simulated" />} />
+            <div className="px-4 py-3">
+              {shown ? (
+                <ShiftRibbon plan={shown} states={states} clockMin={plan ? state.clockMin[shift.id] : undefined} onSelect={setSelected} selected={selected} />
+              ) : (
+                <p className="text-sm text-ink-faint">Appears after you generate a plan.</p>
+              )}
+            </div>
+          </Panel>
+
       <div className="grid gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Panel>
           <PanelHeader
@@ -293,7 +304,7 @@ export default function DispatcherPage() {
                       return (
                         <tr
                           key={ps.stopId}
-                          className={cn("border-b border-line/70 align-top hover:bg-canvas/60", selected === ps.stopId && "bg-brand-tint/50")}
+                          className={cn("border-b border-line/70 align-top transition-colors duration-300 hover:bg-canvas/60", selected === ps.stopId && "bg-brand-tint/60 shadow-[inset_3px_0_0_0_#ee4d2d]")}
                           onClick={() => setSelected(ps.stopId)}
                         >
                           <td className="px-3 py-2.5 text-ink-faint">{ps.seq}</td>
@@ -406,16 +417,6 @@ export default function DispatcherPage() {
         </Panel>
 
         <div className="space-y-5">
-          <Panel>
-            <PanelHeader title="Shift timeline" note={present ? "One mark per stop" : "Each mark is a stop at its simulated arrival time"} actions={<SourceTag kind="simulated" />} />
-            <div className="px-4 py-3">
-              {shown ? (
-                <ShiftRibbon plan={shown} states={states} clockMin={plan ? state.clockMin[shift.id] : undefined} onSelect={setSelected} selected={selected} />
-              ) : (
-                <p className="text-sm text-ink-faint">Appears after you generate a plan.</p>
-              )}
-            </div>
-          </Panel>
           <Panel>
             <PanelHeader title="Route" note={present ? undefined : "Click a stop to highlight it in the list"} />
             <div className="px-4 py-3">
@@ -582,29 +583,58 @@ function TransferDialog({ stopId, riderName, onClose, onConfirm }: { stopId: str
   );
 }
 
-/** The two plans that matter on stage: today's logic vs S-Compass, with three numbers each. */
+/** The two plans that matter on stage: today's logic vs S-Compass, with three numbers each and a bar to compare them. */
 function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => void }) {
   const today = plans.find((p) => p.method === "baseline");
   const sc = plans.find((p) => p.method === "rules");
   const ai = plans.find((p) => p.method === "model");
   if (!today || !sc) return null;
   const late = (p: Plan) => p.totals.endMin > 20 * 60 + 30;
-  const items: { label: string; a: string; b: string; better: boolean }[] = [
-    { label: "Expected successful deliveries", a: today.totals.expectedSuccess.toFixed(1), b: sc.totals.expectedSuccess.toFixed(1), better: sc.totals.expectedSuccess > today.totals.expectedSuccess },
-    { label: "Estimated finish", a: fmt(today.totals.endMin), b: fmt(sc.totals.endMin), better: sc.totals.endMin < today.totals.endMin },
-    { label: "Stops at a low-chance time", a: String(today.totals.lowChance), b: String(sc.totals.lowChance), better: sc.totals.lowChance < today.totals.lowChance },
+  const items: { label: string; a: number; b: number; format: (v: number) => string; lowerBetter: boolean; bar: (v: number, max: number) => number; gain: (a: number, b: number) => string }[] = [
+    {
+      label: "Expected successful deliveries",
+      a: today.totals.expectedSuccess,
+      b: sc.totals.expectedSuccess,
+      format: (v) => v.toFixed(1),
+      lowerBetter: false,
+      bar: (v, max) => (max > 0 ? v / max : 0),
+      gain: (a, b) => `+${(b - a).toFixed(1)} deliveries`,
+    },
+    {
+      label: "Estimated finish",
+      a: today.totals.endMin,
+      b: sc.totals.endMin,
+      format: (v) => fmt(Math.round(v)),
+      lowerBetter: true,
+      bar: (v, max) => (max > SHIFT_START ? (v - SHIFT_START) / (max - SHIFT_START) : 0),
+      gain: (a, b) => `${Math.round(a - b)} min earlier`,
+    },
+    {
+      label: "Stops at a low-chance time",
+      a: today.totals.lowChance,
+      b: sc.totals.lowChance,
+      format: (v) => String(Math.round(v)),
+      lowerBetter: true,
+      bar: (v, max) => (max > 0 ? v / max : 0),
+      gain: (a, b) => `${a - b} fewer`,
+    },
   ];
+  const isBetter = (x: (typeof items)[number]) => (x.lowerBetter ? x.b < x.a : x.b > x.a);
+  const max = (x: (typeof items)[number]) => Math.max(x.a, x.b);
   return (
     <div>
       <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
         <div className="rounded-xl border border-line bg-canvas p-4">
           <div className="text-sm font-semibold text-ink-soft">Today’s app</div>
           <div className="text-xs text-ink-faint">Nearest map pin next</div>
-          <dl className="mt-3 space-y-3">
+          <dl className="mt-3 space-y-4">
             {items.map((x) => (
               <div key={x.label}>
                 <dt className="text-xs text-ink-faint">{x.label}</dt>
-                <dd className="text-3xl font-semibold text-ink-soft">{x.a}</dd>
+                <dd className="text-3xl font-semibold text-ink-soft">{x.format(x.a)}</dd>
+                <div className="mt-1 h-2 rounded-full bg-line/70">
+                  <div className="sc-grow h-2 rounded-full bg-ink-faint/60" style={{ width: `${Math.max(4, x.bar(x.a, max(x)) * 100)}%` }} />
+                </div>
               </div>
             ))}
           </dl>
@@ -613,17 +643,20 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
         <div className="hidden items-center md:flex">
           <ArrowRight className="size-8 text-ink-faint" aria-hidden />
         </div>
-        <div className="rounded-xl border-2 border-brand bg-brand-tint/40 p-4">
+        <div className="rounded-xl border-2 border-brand bg-brand-tint/40 p-4 shadow-[0_6px_20px_-8px_rgba(238,77,45,0.35)]">
           <div className="text-sm font-semibold text-brand-ink">S-Compass</div>
           <div className="text-xs text-ink-faint">Best time block for each stop</div>
-          <dl className="mt-3 space-y-3">
+          <dl className="mt-3 space-y-4">
             {items.map((x) => (
               <div key={x.label}>
                 <dt className="text-xs text-ink-faint">{x.label}</dt>
-                <dd className="flex items-baseline gap-2 text-3xl font-semibold">
-                  {x.b}
-                  {x.better ? <span className="text-sm font-medium text-ok">better</span> : null}
+                <dd className="flex flex-wrap items-baseline gap-2 text-3xl font-semibold">
+                  <CountUp from={x.a} to={x.b} format={x.format} />
+                  {isBetter(x) ? <span className="sc-fade rounded-full bg-ok-tint px-2 py-0.5 text-xs font-semibold text-ok" style={{ ["--d" as string]: "0.7s" }}>{x.gain(x.a, x.b)}</span> : null}
                 </dd>
+                <div className="mt-1 h-2 rounded-full bg-line/70">
+                  <div className={cn("sc-grow h-2 rounded-full", isBetter(x) ? "bg-brand" : "bg-ink-faint/60")} style={{ width: `${Math.max(4, x.bar(x.b, max(x)) * 100)}%` }} />
+                </div>
               </div>
             ))}
           </dl>
@@ -640,7 +673,7 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
           AI model (test): {ai.totals.expectedSuccess.toFixed(1)} expected · finish {fmt(ai.totals.endMin)}. Shown as a test only; S-Compass rules stay the default.
         </p>
       ) : null}
-      <p className="mt-1 text-xs text-ink-faint">{today.totals.stops === sc.totals.stops && today.totals.estimatedStops === sc.totals.estimatedStops ? `Same ${today.totals.stops} stops (${today.totals.estimatedStops} with an estimate), same scorer, same start time.` : `Today’s app: ${today.totals.stops} stops (${today.totals.estimatedStops} estimated). S-Compass: ${sc.totals.stops} stops (${sc.totals.estimatedStops} estimated).`} Expected deliveries are a sum of per-stop chances, not a guaranteed result.</p>
+      <p className="mt-1 text-xs text-ink-faint">{today.totals.stops === sc.totals.stops && today.totals.estimatedStops === sc.totals.estimatedStops ? `Same ${today.totals.stops} stops (${today.totals.estimatedStops} with an estimate), same scorer, same start time.` : `Today’s app: ${today.totals.stops} stops (${today.totals.estimatedStops} estimated). S-Compass: ${sc.totals.stops} stops (${sc.totals.estimatedStops} estimated).`} Bars compare the two plans on the same scale. Expected deliveries are a sum of per-stop chances, not a guaranteed result.</p>
     </div>
   );
 }

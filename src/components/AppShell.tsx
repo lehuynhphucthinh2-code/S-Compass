@@ -55,6 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <PresentToggle />
+            <AnimToggle />
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium",
@@ -215,6 +216,25 @@ function PresentToggle() {
         <span className={cn("absolute top-0.5 size-3 rounded-full bg-white transition-all", present ? "left-3.5" : "left-0.5")} />
       </span>
       Presentation {present ? "on" : "off"}
+    </button>
+  );
+}
+
+function AnimToggle() {
+  const { anim, setAnim } = usePresent();
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={anim}
+      onClick={() => setAnim(!anim)}
+      title="Animation: short movements that show what changed. Turn off if the computer is slow."
+      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", anim ? "border-line bg-surface text-ink" : "border-line text-ink-faint")}
+    >
+      <span className={cn("relative h-4 w-7 rounded-full transition-colors", anim ? "bg-ok" : "bg-line")}>
+        <span className={cn("absolute top-0.5 size-3 rounded-full bg-white transition-all", anim ? "left-3.5" : "left-0.5")} />
+      </span>
+      Animation {anim ? "on" : "off"}
     </button>
   );
 }

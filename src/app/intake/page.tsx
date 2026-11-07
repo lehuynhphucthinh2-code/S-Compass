@@ -261,6 +261,16 @@ export default function IntakePage() {
               <Stat label="Rider-days" value={s.riderDays.toLocaleString()} sub={`${s.heavyDays} heavy (> ${HEAVY_DAY_PARCELS} parcels)`} />
               <Stat label="Places" value={s.places.toLocaleString()} sub="new cards, unverified" />
             </div>
+            <div className="border-t border-line px-4 pt-3">
+              <div className="flex h-3 w-full overflow-hidden rounded-full bg-line/60" role="img" aria-label={`${s.accepted} accepted, ${s.warning} accepted with warning, ${s.quarantined} need a dispatcher, out of ${s.rowsRead} rows`}>
+                {s.accepted ? <div className="sc-grow h-full bg-ok" style={{ width: `${(s.accepted / s.rowsRead) * 100}%` }} /> : null}
+                {s.warning ? <div className="sc-grow h-full bg-warn" style={{ width: `${(s.warning / s.rowsRead) * 100}%`, ["--d" as string]: "0.1s" }} /> : null}
+                {s.quarantined ? <div className="sc-grow h-full bg-bad" style={{ width: `${(s.quarantined / s.rowsRead) * 100}%`, ["--d" as string]: "0.2s" }} /> : null}
+              </div>
+              <p className="mt-1 text-xs text-ink-faint">
+                <span className="text-ok">■</span> accepted {s.accepted} · <span className="text-warn">■</span> accepted with warning {s.warning} · <span className="text-bad">■</span> needs dispatcher {s.quarantined} · total {s.rowsRead.toLocaleString()} rows
+              </p>
+            </div>
             <div className="grid gap-x-6 gap-y-1 border-t border-line px-4 py-3 text-sm sm:grid-cols-2">
               <p><b>{(s.eligible ?? s.accepted + s.warning).toLocaleString()}</b> of {s.rowsRead.toLocaleString()} rows can be scored and planned. {s.quarantined.toLocaleString()} wait for a dispatcher (not planned, never deleted).</p>
               <p><b>{(s.noPin ?? 0).toLocaleString()}</b> planned rows have no usable map pin: they stay in the plan and in the list, but are not drawn on the map.</p>

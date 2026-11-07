@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Panel({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
-  return <section className={cn("rounded-xl border border-line bg-surface", className)} {...props} />;
+  return <section className={cn("rounded-xl border border-line bg-surface shadow-[0_1px_2px_rgba(20,33,61,0.04),0_4px_14px_-6px_rgba(20,33,61,0.08)]", className)} {...props} />;
 }
 
 export function PanelHeader({ title, note, actions, className }: { title: React.ReactNode; note?: React.ReactNode; actions?: React.ReactNode; className?: string }) {
