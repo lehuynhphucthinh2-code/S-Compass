@@ -12,12 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Label, Textarea } from "@/components/ui/field";
 import { Panel, PanelHeader } from "@/components/ui/panel";
-import { BACKUP_RIDER, fixtures, historical, riderOfShift } from "@/lib/data";
+import { BACKUP_RIDER, activeImportBatch, fixtures, historical, riderOfShift } from "@/lib/data";
 import { comparePlans, dispatchPlan, generatePlan, selectRider, selectShift, transferParcel } from "@/lib/demoState";
 import { metrics } from "@/lib/evidence";
 import { METHOD_LABEL } from "@/lib/planner";
-import { fmt } from "@/lib/time";
-import type { Plan, PlanMethod, PlannedStop } from "@/lib/types";
+import { explainTable } from "@/lib/successTable";
+import { blockLabel, fmt } from "@/lib/time";
+import type { FixtureStop, Plan, PlanMethod, PlannedStop } from "@/lib/types";
 import { cn, pct } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
 import { Details, Hint, usePresent } from "@/state/PresentMode";
@@ -64,6 +65,7 @@ export default function DispatcherPage() {
 
   return (
     <div className="space-y-5">
+      <DataSourceBar imported={shift.id.startsWith("imp-")} shiftDate={shift.date} weekday={shift.weekday} parcels={shift.stops.length} />
       <StartHere generated={!!shown} compared={compared} dispatched={!!plan} />
       {/* Shift and planning controls */}
       <Panel>
@@ -196,7 +198,7 @@ export default function DispatcherPage() {
           />
           {shown ? (
             <div className="grid grid-cols-2 gap-4 px-4 py-3">
-              <Stat label="Expected successful first attempts" value={shown.totals.expectedSuccess.toFixed(1)} sub={`of ${shown.totals.estimatedStops} estimated remaining stops`} />
+              <Stat label="Expected successful deliveries" value={shown.totals.expectedSuccess.toFixed(1)} sub={`of ${shown.totals.estimatedStops} estimated remaining stops`} />
               <Stat label="Estimated finish" value={fmt(shown.totals.endMin)} sub={`${Math.round(shown.totals.onRoadMin)} min working, ${shown.totals.distanceKm.toFixed(1)} km`} />
               <Stat label="Low-chance stops" value={shown.totals.lowChance} sub="planned where history shows under 65%" />
               <Stat label="Flagged for dispatcher" value={shown.totals.flagged} sub={shown.totals.confirmedTotal ? `${shown.totals.confirmedKept}/${shown.totals.confirmedTotal} buyer windows kept` : "no buyer confirmations yet"} />
@@ -417,10 +419,10 @@ export default function DispatcherPage() {
           <Panel>
             <PanelHeader title="Route" note={present ? undefined : "Click a stop to highlight it in the list"} />
             <div className="px-4 py-3">
-              <RouteMap riderId={rider.id} plan={shown} states={states} selected={selected} onSelect={setSelected} />
+              <RouteMap riderId={rider.id} plan={shown} states={states} selected={selected} onSelect={setSelected} baseline={compared ? state.comparison?.find((p) => p.method === "baseline") : null} />
             </div>
           </Panel>
-          {selected && shown ? <SelectedStop ps={shown.stops.find((x) => x.stopId === selected)} onOpen={() => setCardOpen({ key: stopById[selected].locationKey, stopId: selected })} /> : null}
+          {selected && shown ? <SelectedStop ps={shown.stops.find((x) => x.stopId === selected)} stop={stopById[selected]} weekend={shift.isWeekend} method={shown.method} imported={shift.id.startsWith("imp-")} onOpen={() => setCardOpen({ key: stopById[selected].locationKey, stopId: selected })} /> : null}
           {transferred.length ? (
             <Panel>
               <PanelHeader title={BACKUP_RIDER} note="Parcels moved here by the dispatcher" />
@@ -443,7 +445,7 @@ export default function DispatcherPage() {
   );
 }
 
-function SelectedStop({ ps, onOpen }: { ps?: PlannedStop; onOpen: () => void }) {
+function SelectedStop({ ps, stop, weekend, method, imported, onOpen }: { ps?: PlannedStop; stop?: FixtureStop; weekend: boolean; method: PlanMethod; imported: boolean; onOpen: () => void }) {
   if (!ps) return null;
   return (
     <Panel>
@@ -467,6 +469,7 @@ function SelectedStop({ ps, onOpen }: { ps?: PlannedStop; onOpen: () => void }) 
         <p className="text-xs text-ink-faint">
           Simulated: travel {Math.round(ps.travelMin)} min, entrance search {ps.searchMin} min, service {ps.serviceMin} min.
         </p>
+        {stop ? <EstimateExplain ps={ps} stop={stop} weekend={weekend} method={method} imported={imported} /> : null}
       </div>
     </Panel>
   );
@@ -478,7 +481,7 @@ function CompareDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   const plans = state.comparison ?? [];
   const best = plans.length ? Math.max(...plans.map((p) => p.totals.expectedSuccess)) : 0;
   const rows: { label: string; get: (p: Plan) => string; note?: string }[] = [
-    { label: "Expected successful first attempts", get: (p) => p.totals.expectedSuccess.toFixed(1), note: "History-table estimate, same scorer for every method" },
+    { label: "Expected successful deliveries", get: (p) => p.totals.expectedSuccess.toFixed(1), note: "History-table estimate, same scorer for every method" },
     { label: "Stops with an estimate", get: (p) => `${p.totals.estimatedStops} / ${p.totals.stops}` },
     { label: "Stops in a block with under 65% chance", get: (p) => String(p.totals.lowChance), note: "e.g. schools and offices in the evening" },
     { label: "Distance (straight-line × 1.3)", get: (p) => `${p.totals.distanceKm.toFixed(1)} km` },
@@ -587,7 +590,7 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
   if (!today || !sc) return null;
   const late = (p: Plan) => p.totals.endMin > 20 * 60 + 30;
   const items: { label: string; a: string; b: string; better: boolean }[] = [
-    { label: "Expected successful first attempts", a: today.totals.expectedSuccess.toFixed(1), b: sc.totals.expectedSuccess.toFixed(1), better: sc.totals.expectedSuccess > today.totals.expectedSuccess },
+    { label: "Expected successful deliveries", a: today.totals.expectedSuccess.toFixed(1), b: sc.totals.expectedSuccess.toFixed(1), better: sc.totals.expectedSuccess > today.totals.expectedSuccess },
     { label: "Estimated finish", a: fmt(today.totals.endMin), b: fmt(sc.totals.endMin), better: sc.totals.endMin < today.totals.endMin },
     { label: "Stops at a low-chance time", a: String(today.totals.lowChance), b: String(sc.totals.lowChance), better: sc.totals.lowChance < today.totals.lowChance },
   ];
@@ -637,7 +640,7 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
           AI model (test): {ai.totals.expectedSuccess.toFixed(1)} expected · finish {fmt(ai.totals.endMin)}. Shown as a test only; S-Compass rules stay the default.
         </p>
       ) : null}
-      <p className="mt-1 text-xs text-ink-faint">Simulated estimates on the same rider-day. Same parcels, same scorer, same 08:00 start.</p>
+      <p className="mt-1 text-xs text-ink-faint">{today.totals.stops === sc.totals.stops && today.totals.estimatedStops === sc.totals.estimatedStops ? `Same ${today.totals.stops} stops (${today.totals.estimatedStops} with an estimate), same scorer, same start time.` : `Today’s app: ${today.totals.stops} stops (${today.totals.estimatedStops} estimated). S-Compass: ${sc.totals.stops} stops (${sc.totals.estimatedStops} estimated).`} Expected deliveries are a sum of per-stop chances, not a guaranteed result.</p>
     </div>
   );
 }
@@ -704,6 +707,84 @@ function Glance({ shown, parcels, risk, draft }: { shown: Plan | null; parcels: 
         <div className={cn("text-3xl font-semibold", risk > 0 && "text-warn")}>{shown ? risk : "—"}</div>
         {shown ? <div className="text-xs text-ink-faint">{draft ? "Draft plan · simulated" : "Dispatched plan · simulated"}</div> : null}
       </div>
+    </div>
+  );
+}
+
+/** “How this estimate is calculated”: every number below is read from the real table, nothing is invented. */
+function EstimateExplain({ ps, stop, weekend, method, imported }: { ps: PlannedStop; stop: FixtureStop; weekend: boolean; method: PlanMethod; imported: boolean }) {
+  const [open, setOpen] = React.useState(false);
+  const day = weekend ? "weekend" : "weekday";
+  const x = explainTable(stop.locationType, ps.block, day, stop.payment);
+  const pct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
+  return (
+    <div className="border-t border-line pt-2">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="text-sm font-medium text-info hover:underline">
+        {open ? "Hide: how this estimate is calculated" : "How this estimate is calculated"}
+      </button>
+      {open ? (
+        <div className="mt-2 space-y-3 text-sm">
+          {ps.p === null ? (
+            <p className="rounded-md bg-canvas px-3 py-2">No estimate for this stop. The buyer chose a pickup point, and the history table has no data for pickup points, so the app shows no number instead of inventing one.</p>
+          ) : (
+            <>
+              <p className="rounded-md bg-canvas px-3 py-2">
+                {imported ? "The file describes the delivery. " : ""}The app estimates success with its history table. The chance is calculated by the app{imported ? "; it is not a probability supplied in your file" : ""}.
+              </p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt className="text-ink-faint">Outcome estimated</dt>
+                <dd>This attempt is delivered at that time block (any attempt, first or repeat).</dd>
+                <dt className="text-ink-faint">Inputs used</dt>
+                <dd>
+                  site type <b>{TYPE_LABEL[stop.locationType]}</b> · block <b>{blockLabel(ps.block)}</b> (chosen by the plan) · <b>{day}</b> · payment <b>{stop.payment}</b>
+                </dd>
+                <dt className="text-ink-faint">Where inputs come from</dt>
+                <dd>{imported ? "Site type and payment: from your file (or mapped from it). Weekday/weekend: worked out from the date. Block: recommended by the plan." : "Demo records built from the Strategy Round dataset. Block: recommended by the plan."}</dd>
+                <dt className="text-ink-faint">History group</dt>
+                <dd>{x.found ? `${x.attempts.toLocaleString()} past attempts, about ${x.successes.toLocaleString()} delivered${x.rawRate !== null ? ` (${pct1(x.rawRate)})` : ""}. Source: ${x.trainedOn}.` : `No past attempts in this group. Fallback: the overall rate ${pct1(x.prior)}.`}</dd>
+                <dt className="text-ink-faint">Formula</dt>
+                <dd>
+                  {x.found
+                    ? `(${x.successes} + ${x.strength} × ${pct1(x.prior)}) ÷ (${x.attempts} + ${x.strength}) = ${pct1(x.p)}`
+                    : `Overall rate = ${pct1(x.prior)}`}
+                </dd>
+                <dt className="text-ink-faint">Smoothing</dt>
+                <dd>{x.strength} “pseudo-attempts” at the overall rate pull small groups toward the average, so a group with few attempts cannot look extreme.</dd>
+              </dl>
+              {method === "model" && ps.pModel !== null ? <p>AI model (test) value: {pct1(ps.pModel)}. It is an experimental logistic regression and did not beat this table on the holdout, so S-Compass uses the table.</p> : null}
+            </>
+          )}
+          <ul className="list-disc space-y-1 pl-5 text-xs text-ink-faint">
+            <li>The table mixes first and repeat attempts, so this is not a first-attempt probability.</li>
+            <li>The number of past attempts shows how much history sits behind the estimate. It is not statistical confidence.</li>
+            <li>Importing a file does not retrain or change the table. Notes written after arrival are not used as advance knowledge.</li>
+            <li>The sum of these chances is an expected count of deliveries, not a guaranteed result.</li>
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Always says which data is on screen, so demo history is never mistaken for a file the judges brought. */
+function DataSourceBar({ imported, shiftDate, weekday, parcels }: { imported: boolean; shiftDate: string; weekday: string; parcels: number }) {
+  const b = activeImportBatch();
+  return (
+    <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-2 text-sm", imported ? "border-brand/40 bg-brand-tint/40" : "border-line bg-surface")}>
+      <Badge tone={imported ? "ok" : "neutral"}>{imported ? "Imported data" : "Demo data"}</Badge>
+      <span>
+        {imported && b ? (
+          <>
+            <b>{b.fileName}</b>
+            {b.sheet ? ` (sheet “${b.sheet}”)` : ""} · {b.purpose === "replay" ? "replay of past data" : "orders to plan"}
+          </>
+        ) : (
+          <>Strategy Round history (1–30 Sep 2026), used as demo data. It is not data from the Final Round.</>
+        )}
+      </span>
+      <span className="text-ink-soft">
+        Batch: {weekday} {shiftDate} · {parcels} deliveries
+      </span>
     </div>
   );
 }

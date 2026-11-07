@@ -28,15 +28,26 @@ export function ShiftRibbon({
   const lanes: number[] = [];
   const placed = stops.map((s) => {
     let lane = 0;
-    while (lanes[lane] !== undefined && lanes[lane] > x(s.arriveMin) - 1.6) lane++;
+    while (lanes[lane] !== undefined && lanes[lane] > x(s.arriveMin) - 2.6) lane++;
     lanes[lane] = x(s.arriveMin);
     return { s, lane };
   });
   const laneCount = Math.max(1, ...placed.map((p) => p.lane + 1));
+  const late = stops.filter((s) => s.arriveMin > SHIFT_END);
+  const unscheduled = plan.stops.filter((s) => Number.isNaN(s.arriveMin));
+  const ticks: number[] = [];
+  for (let m = Math.ceil(SHIFT_START / 120) * 120; m <= end; m += 120) ticks.push(m);
 
   return (
     <div>
-      <div className="relative" style={{ height: 30 + laneCount * 20 }}>
+      <div className="relative h-5 text-[11px] text-ink-faint" aria-hidden>
+        {ticks.map((m) => (
+          <span key={m} className="absolute -translate-x-1/2" style={{ left: `${x(m)}%` }}>
+            {fmt(m)}
+          </span>
+        ))}
+      </div>
+      <div className="relative" style={{ height: 30 + laneCount * 22 }}>
         {BLOCKS.map((b) => (
           <div
             key={b.id}
@@ -69,19 +80,25 @@ export function ShiftRibbon({
               type="button"
               onClick={() => onSelect?.(s.stopId)}
               className={cn(
-                "absolute h-4 w-2.5 -translate-x-1/2 rounded-sm ring-offset-1",
+                "absolute flex h-[18px] min-w-[22px] -translate-x-1/2 items-center justify-center rounded-sm px-0.5 text-[10px] font-semibold leading-none text-white ring-offset-1",
                 done ? "bg-ink-faint/40" : tone,
                 selected === s.stopId && "ring-2 ring-brand",
                 s.flags.length > 0 && !done && "outline outline-2 outline-bad",
               )}
-              style={{ left: `${x(s.arriveMin)}%`, top: 24 + lane * 20 }}
-              aria-label={`${s.stopId} at ${fmt(s.arriveMin)}, chance ${s.p === null ? "not estimated" : Math.round(s.p * 100) + "%"}`}
-              title={`${s.stopId} · ${fmt(s.arriveMin)} · ${s.p === null ? "not estimated" : Math.round(s.p * 100) + "%"}`}
-            />
+              style={{ left: `${x(s.arriveMin)}%`, top: 24 + lane * 22 }}
+              aria-label={`Stop ${s.seq}, ${s.stopId} at ${fmt(s.arriveMin)}${s.flags.length ? ", flagged for dispatcher" : ""}, chance ${s.p === null ? "not estimated" : Math.round(s.p * 100) + "%"}`}
+              title={`#${s.seq} ${s.stopId} · arrive ${fmt(s.arriveMin)}, leave ${fmt(s.departMin)} · ${s.p === null ? "not estimated" : Math.round(s.p * 100) + "%"}`}
+            >
+              {s.seq}
+              {s.flags.length > 0 && !done ? "!" : ""}
+            </button>
           );
         })}
       </div>
+      {late.length ? <p className="mt-1 text-xs font-medium text-bad">{late.length} stop{late.length === 1 ? "" : "s"} arrive after the {fmt(SHIFT_END)} shift end ({late.map((x) => `#${x.seq}`).join(", ")}). The dispatcher must review or move parcels.</p> : null}
+      {unscheduled.length ? <p className="mt-1 text-xs font-medium text-warn">{unscheduled.length} stop{unscheduled.length === 1 ? "" : "s"} could not be scheduled: {unscheduled.map((x) => x.stopId).join(", ")}.</p> : null}
       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-faint">
+        <span>Number = stop order (same as the map). “!” = flagged for the dispatcher.</span>
         <span className="inline-flex items-center gap-1">
           <span className="h-3 w-2 rounded-sm bg-ok" /> ≥80% chance
         </span>
@@ -97,7 +114,7 @@ export function ShiftRibbon({
         <span className="inline-flex items-center gap-1">
           <span className="h-3 w-2 rounded-sm bg-ink-faint/40" /> done
         </span>
-        <span>Chance = history-table estimate (simulated)</span>
+        <span>Times are simulated estimates (speed, handover and search times are assumptions). Chance = history-table estimate for this attempt.</span>
       </div>
     </div>
   );

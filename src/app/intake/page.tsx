@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { activeImportBatch, saveImportedLocal, setImported } from "@/lib/data";
 import { recordImport, recordImportRemoved, selectShift } from "@/lib/demoState";
-import { HEAVY_DAY_PARCELS, MAX_ROWS, messySampleRows, parseCsv, parseTable, templateRows, toCsvText, type ImportBatch, type RowStatus } from "@/lib/intake";
+import { FIELD_INFO, HEAVY_DAY_PARCELS, MAX_ROWS, detectColumns, messySampleRows, parseCsv, parseTable, templateRows, toCsvText, type ColumnDetection, type Field, type ImportBatch, type ImportPurpose, type RowStatus } from "@/lib/intake";
 import { cn, downloadText } from "@/lib/utils";
 import { useDemo } from "@/state/DemoProvider";
 import { Details, usePresent } from "@/state/PresentMode";
@@ -33,9 +33,9 @@ const RULES: [string, string, string][] = [
   [`More than ${MAX_ROWS.toLocaleString()} rows`, "First batch processed; the rest is listed as not processed", "Not processed"],
 ];
 
-async function readFile(file: File): Promise<{ rows: unknown[][]; sheet: string | null }> {
+async function readFile(file: File): Promise<{ rows: unknown[][]; sheet: string | null; all: { sheet: string; data: unknown[][] }[] }> {
   const name = file.name.toLowerCase();
-  if (name.endsWith(".csv") || name.endsWith(".txt")) return { rows: parseCsv(await file.text()), sheet: null };
+  if (name.endsWith(".csv") || name.endsWith(".txt")) return { rows: parseCsv(await file.text()), sheet: null, all: [] };
   if (name.endsWith(".xls")) throw new Error("Old .xls files are not supported. In Excel choose File › Save As › Excel Workbook (.xlsx) or CSV.");
   const { default: readXlsxFile } = await import("read-excel-file/browser");
   const sheets = await readXlsxFile(file);
@@ -50,7 +50,7 @@ async function readFile(file: File): Promise<{ rows: unknown[][]; sheet: string 
       bestScore = score;
     }
   }
-  return { rows: (best?.data ?? []) as unknown[][], sheet: best?.sheet ?? null };
+  return { rows: (best?.data ?? []) as unknown[][], sheet: best?.sheet ?? null, all: sheets.map((x) => ({ sheet: x.sheet, data: x.data as unknown[][] })) };
 }
 
 export default function IntakePage() {
@@ -65,9 +65,15 @@ export default function IntakePage() {
   const [filter, setFilter] = React.useState<RowStatus | "issues">("issues");
   const fileRef = React.useRef<HTMLInputElement>(null);
 
-  const check = (rows: unknown[][], fileName: string, sheet: string | null) => {
+  const [allSheets, setAllSheets] = React.useState<{ sheet: string; data: unknown[][] }[]>([]);
+  const [src, setSrc] = React.useState<{ rows: unknown[][]; fileName: string; sheet: string | null } | null>(null);
+  const [detect, setDetect] = React.useState<ColumnDetection | null>(null);
+  const [overrides, setOverrides] = React.useState<Partial<Record<Field, number | null>>>({});
+  const [purpose, setPurpose] = React.useState<ImportPurpose | null>(null);
+
+  const run = (source: { rows: unknown[][]; fileName: string; sheet: string | null }, ov: Partial<Record<Field, number | null>>, pu: ImportPurpose | null) => {
     const t0 = performance.now();
-    const res = parseTable(rows, fileName, sheet);
+    const res = parseTable(source.rows, source.fileName, source.sheet, new Date(), ov, pu ?? undefined);
     const ms = Math.round(performance.now() - t0);
     if (!res.ok) {
       setError({ text: res.error, found: res.foundColumns });
@@ -81,12 +87,34 @@ export default function IntakePage() {
     setNote(`Checked ${res.batch.summary.rowsRead.toLocaleString()} rows in ${ms} ms. Nothing is in the plan yet: review the results, then import.`);
   };
 
+  const check = (rows: unknown[][], fileName: string, sheet: string | null) => {
+    const source = { rows, fileName, sheet };
+    setSrc(source);
+    setDetect(detectColumns(rows));
+    setOverrides({});
+    setPurpose(null);
+    run(source, {}, null);
+  };
+
+  const changeMap = (f: Field, v: number | null) => {
+    if (!src) return;
+    const ov = { ...overrides, [f]: v };
+    setOverrides(ov);
+    run(src, ov, purpose);
+  };
+
+  const changePurpose = (pu: ImportPurpose) => {
+    setPurpose(pu);
+    if (src) run(src, overrides, pu);
+  };
+
   const onFile = async (file: File | undefined) => {
     if (!file) return;
     setBusy(true);
     setNote(null);
     try {
-      const { rows, sheet } = await readFile(file);
+      const { rows, sheet, all } = await readFile(file);
+      setAllSheets(all);
       check(rows, file.name, sheet);
     } catch (e) {
       setError({ text: e instanceof Error ? e.message : "The file could not be read.", found: [] });
@@ -148,7 +176,7 @@ export default function IntakePage() {
           <Button variant="primary" onClick={() => fileRef.current?.click()} disabled={busy}>
             <Upload /> {busy ? "Reading…" : "Upload Excel or CSV"}
           </Button>
-          <Button onClick={() => check(messySampleRows(), "practice-file-fictional.csv", null)} disabled={busy}>
+          <Button onClick={() => { setAllSheets([]); check(messySampleRows(), "practice-file-fictional.csv", null); }} disabled={busy}>
             <FlaskConical /> Check the practice file
           </Button>
           <Button variant="ghost" onClick={() => downloadText("s-compass-template.csv", toCsvText(templateRows()), "text/csv")}>
@@ -172,6 +200,20 @@ export default function IntakePage() {
         </div>
         </Details>
       </Panel>
+
+      <StepBar step={isActive ? 4 : batch ? 2 : src ? 1 : 0} />
+
+      {allSheets.length > 1 && src ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-sm">
+          <label htmlFor="sheet-pick" className="font-medium">Sheet in this workbook</label>
+          <select id="sheet-pick" className="h-8 rounded-md border border-line bg-surface px-2" value={src.sheet ?? ""} onChange={(e) => { const sh = allSheets.find((x) => x.sheet === e.target.value); if (sh) check(sh.data, src.fileName, sh.sheet); }}>
+            {allSheets.map((x) => <option key={x.sheet} value={x.sheet}>{x.sheet}</option>)}
+          </select>
+          <span className="text-xs text-ink-faint">The sheet that looks most like delivery data was chosen first. Changing it re-checks the file.</span>
+        </div>
+      ) : null}
+
+      {src && detect ? <MappingPanel detect={detect} overrides={overrides} onChange={changeMap} purpose={purpose ?? batch?.purpose ?? "plan"} onPurpose={changePurpose} attention={!!error || detect.ambiguous.length > 0} /> : null}
 
       {note ? <div className="rounded-lg border border-line bg-surface px-4 py-3 text-sm">{note}</div> : null}
 
@@ -218,6 +260,12 @@ export default function IntakePage() {
               <Stat label="Quarantined" value={s.quarantined.toLocaleString()} sub="not planned, dispatcher decides" />
               <Stat label="Rider-days" value={s.riderDays.toLocaleString()} sub={`${s.heavyDays} heavy (> ${HEAVY_DAY_PARCELS} parcels)`} />
               <Stat label="Places" value={s.places.toLocaleString()} sub="new cards, unverified" />
+            </div>
+            <div className="grid gap-x-6 gap-y-1 border-t border-line px-4 py-3 text-sm sm:grid-cols-2">
+              <p><b>{(s.eligible ?? s.accepted + s.warning).toLocaleString()}</b> of {s.rowsRead.toLocaleString()} rows can be scored and planned. {s.quarantined.toLocaleString()} wait for a dispatcher (not planned, never deleted).</p>
+              <p><b>{(s.noPin ?? 0).toLocaleString()}</b> planned rows have no usable map pin: they stay in the plan and in the list, but are not drawn on the map.</p>
+              <p><b>{(s.attemptUnknown ?? 0).toLocaleString()}</b> planned rows have “attempt status unknown”: the app does not assume a first attempt.</p>
+              <p>Purpose: <b>{batch.purpose === "replay" ? "replay past data (results shown for comparison only)" : "plan these orders (results in the file are not used)"}</b>. Accepted + warning + quarantined = rows read.</p>
             </div>
             {batch.fileNotes.length ? (
               <ul className="space-y-1 border-t border-line px-4 py-3 text-sm text-warn">
@@ -350,5 +398,116 @@ function BigBox({ tone, label, value, sub }: { tone: "ok" | "warn" | "bad"; labe
       <div className="text-4xl font-semibold leading-tight">{value.toLocaleString()}</div>
       <div className="text-xs opacity-90">{sub}</div>
     </div>
+  );
+}
+
+const STEPS = ["Upload", "Match columns", "Review", "Import", "Generate plan"];
+
+function StepBar({ step }: { step: number }) {
+  // 0 nothing yet, 1 file read but not checked, 2 checked (review), 4 imported.
+  const at = step === 0 ? 0 : step === 1 ? 1 : step === 2 ? 2 : 4;
+  return (
+    <ol className="flex flex-wrap gap-2 text-sm" aria-label="Import steps">
+      {STEPS.map((x, i) => (
+        <li key={x} className={cn("rounded-full border px-3 py-1", i < at ? "border-ok/40 bg-ok-tint text-ok" : i === at ? "border-brand bg-brand-tint text-brand-ink font-medium" : "border-line text-ink-faint")}>
+          {i + 1}. {x}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+const NEED_LABEL = { required: "Required", scoring: "Used for the estimate", optional: "Optional", results: "Past results only" } as const;
+
+function MappingPanel({ detect, overrides, onChange, purpose, onPurpose, attention }: { detect: ColumnDetection; overrides: Partial<Record<Field, number | null>>; onChange: (f: Field, v: number | null) => void; purpose: ImportPurpose; onPurpose: (p: ImportPurpose) => void; attention: boolean }) {
+  const fields = Object.keys(FIELD_INFO) as Field[];
+  const current = (f: Field): number | null => (f in overrides ? (overrides[f] ?? null) : (detect.map[f] ?? null));
+  const body = (
+    <div className="space-y-4">
+      <p className="text-sm text-ink-soft">
+        The app matched the file’s columns to its fields by name (English and Vietnamese). Change a match if it is wrong. The file is converted inside the app: you do not need our workbook.
+      </p>
+      {detect.ambiguous.length ? (
+        <p className="rounded-md bg-warn-tint px-3 py-2 text-sm text-warn">
+          More than one column fits: {detect.ambiguous.map((f) => FIELD_INFO[f].label).join(", ")}. Please confirm the right one below.
+        </p>
+      ) : null}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-line text-left text-xs text-ink-faint">
+              <th className="py-1 pr-3">App field</th>
+              <th className="py-1 pr-3">Column in your file</th>
+              <th className="py-1">If there is no column</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fields.map((f) => {
+              const info = FIELD_INFO[f];
+              const cur = current(f);
+              return (
+                <tr key={f} className="border-b border-line/60 align-top">
+                  <td className="py-1.5 pr-3">
+                    <span className="font-medium">{info.label}</span> <span className="text-xs text-ink-faint">· {NEED_LABEL[info.need]}</span>
+                    {detect.ambiguous.includes(f) ? <Badge tone="warn">Confirm</Badge> : null}
+                  </td>
+                  <td className="py-1.5 pr-3">
+                    <select
+                      aria-label={`Column for ${info.label}`}
+                      className="h-8 w-full max-w-[16rem] rounded-md border border-line bg-surface px-2 text-sm"
+                      value={cur === null ? "" : String(cur)}
+                      onChange={(e) => onChange(f, e.target.value === "" ? null : Number(e.target.value))}
+                    >
+                      <option value="">— no such column —</option>
+                      {detect.header.map((h, i) => (h ? <option key={i} value={i}>{h}</option> : null))}
+                    </select>
+                  </td>
+                  <td className="py-1.5 text-xs text-ink-faint">{cur === null ? info.ifMissing : ""}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p className="mb-1 text-sm font-medium">What is this file for?</p>
+        <div className="flex flex-wrap gap-2">
+          {([
+            ["plan", "Plan these orders", "Deliveries to plan. Result columns are ignored, because they are not known before delivery."],
+            ["replay", "Replay past data", "Old deliveries. Results are shown for comparison and never change the scorer."],
+          ] as [ImportPurpose, string, string][]).map(([v, label, sub]) => (
+            <label key={v} className={cn("flex max-w-xs cursor-pointer gap-2 rounded-lg border px-3 py-2 text-sm", purpose === v ? "border-brand bg-brand-tint" : "border-line")}>
+              <input type="radio" name="purpose" checked={purpose === v} onChange={() => onPurpose(v)} className="mt-1" />
+              <span>
+                <span className="font-medium">{label}</span>
+                <span className="block text-xs text-ink-faint">{sub}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-ink-faint">Importing never retrains or changes the success table.</p>
+      </div>
+      {detect.preview.length ? (
+        <div className="overflow-x-auto">
+          <p className="mb-1 text-xs text-ink-faint">First rows of the file (header is row {detect.headerIndex + 1})</p>
+          <table className="text-xs">
+            <thead>
+              <tr>{detect.header.map((h, i) => <th key={i} className="border-b border-line px-2 py-1 text-left font-medium">{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {detect.preview.map((r, i) => (
+                <tr key={i}>{r.map((c, j) => <td key={j} className="border-b border-line/60 px-2 py-1">{c}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </div>
+  );
+  return (
+    <Panel>
+      <PanelHeader title="2. Match the columns" note="Check how your file’s columns map to the app" />
+      <div className="px-4 py-3">{attention ? body : <Details label="Check or change the column matches">{body}</Details>}</div>
+    </Panel>
   );
 }

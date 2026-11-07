@@ -89,7 +89,7 @@ export function compareRemaining(
   const tStop = target ? next.find((s) => s.stopId === target) : null;
   if (tStop) reasons.push(...tStop.reasons);
   reasons.push(
-    `Expected successful first attempts on the remaining route: ${prev.reduce((a, s) => a + (s.p ?? 0), 0).toFixed(1)} → ${next
+    `Expected successful deliveries on the remaining route: ${prev.reduce((a, s) => a + (s.p ?? 0), 0).toFixed(1)} → ${next
       .reduce((a, s) => a + (s.p ?? 0), 0)
       .toFixed(1)} (history-table estimate, simulated).`,
   );

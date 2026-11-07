@@ -34,7 +34,7 @@ export const ASSUMPTION_LABELS: { key: string; text: string }[] = [
     text: `Entrance search time: ${ASSUMPTIONS.searchMin.verified} min (verified entrance), ${ASSUMPTIONS.searchMin.suggested} min (suggested), ${ASSUMPTIONS.searchMin.pin} min (map pin only), ${ASSUMPTIONS.searchMin.none} min (no location). Not measured in the dataset — to be measured in the pilot.`,
   },
   { key: "nolocation", text: `A stop with no location is costed at ${ASSUMPTIONS.noLocationTravelMin} min travel.` },
-  { key: "estimate", text: "Expected successful first attempts = sum of history-table probabilities. Buyer confirmation and pickup effects are NOT estimated because the dataset has no such data." },
+  { key: "estimate", text: "Expected successful deliveries = sum of history-table probabilities for each attempt (an expected count, not a guaranteed result; the table mixes first and repeat attempts). Buyer confirmation and pickup effects are NOT estimated because the dataset has no such data." },
 ];
 
 export interface PlanContext {

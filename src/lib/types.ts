@@ -56,6 +56,8 @@ export interface FixtureStop {
   pin: Point | null;
   serviceMinutes: number | null;
   isReattempt: boolean;
+  /** Imported rows only: false when the file does not say which attempt this is (it is then not assumed to be the first). */
+  attemptKnown?: boolean;
 }
 
 export interface Shift {

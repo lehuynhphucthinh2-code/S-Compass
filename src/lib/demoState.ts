@@ -157,7 +157,7 @@ export function planFor(state: DemoState, method: PlanMethod): Plan {
 }
 
 function describePlan(p: Plan) {
-  return `${p.totals.stops} stops · expected ${p.totals.expectedSuccess.toFixed(1)} successful first attempts (of ${p.totals.estimatedStops} estimated) · ${p.totals.distanceKm.toFixed(1)} km · ends ${fmt(p.totals.endMin)} · ${p.totals.flagged} flagged`;
+  return `${p.totals.stops} stops · expected ${p.totals.expectedSuccess.toFixed(1)} successful deliveries (of ${p.totals.estimatedStops} estimated) · ${p.totals.distanceKm.toFixed(1)} km · ends ${fmt(p.totals.endMin)} · ${p.totals.flagged} flagged`;
 }
 
 // ------------------------------------------------------------------ actions
@@ -493,6 +493,19 @@ export function confirmEligibility(stopId: string, state: DemoState): string[] {
 
 // ------------------------------------------------------------------ Data intake
 export function recordImport(state: DemoState, summary: string, details: string): DemoState {
+  // A new import starts clean: plans and stop states of earlier imported rider-days must not look like they belong to it.
+  const dropImp = <T,>(o: Record<string, T>) => Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith("imp-"))) as Record<string, T>;
+  const stillThere = fixtures.shifts.some((x) => x.id === state.shiftId);
+  const base = {
+    ...state,
+    stopStates: dropImp(state.stopStates),
+    currentPlan: dropImp(state.currentPlan),
+    clockMin: dropImp(state.clockMin),
+    draftPlan: state.shiftId.startsWith("imp-") ? null : state.draftPlan,
+    comparison: null,
+    shiftId: stillThere ? state.shiftId : fixtures.shifts[0].id,
+  };
+  state = ensureShiftState(base, base.shiftId);
   return log(state, { type: "data_imported", role: "dispatcher", summary, input: details });
 }
 

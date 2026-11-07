@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fixtures, setImported, shiftById } from "../data";
 import { dispatchPlan, generatePlan, initialState, planFor, selectShift } from "../demoState";
-import { messySampleRows, parseCsv, parseDate, parseTable, templateRows, toCsvText } from "../intake";
+import { detectColumns, messySampleRows, parseCsv, parseDate, parseTable, templateRows, toCsvText } from "../intake";
+import { explainTable, tableP } from "../successTable";
 
 describe("data intake", () => {
   const res = parseTable(messySampleRows(), "practice.csv", null, new Date("2026-11-07T00:00:00Z"));
@@ -71,7 +72,7 @@ describe("data intake", () => {
   it("refuses a file without the needed columns and says which", () => {
     const r = parseTable([["foo", "bar"], [1, 2]], "x.csv");
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.error).toMatch(/delivery_date, location_type/);
+    if (!r.ok) expect(r.error).toMatch(/delivery date, place type/);
   });
 
   it("recognises the case dataset column names", () => {
@@ -91,3 +92,66 @@ describe("data intake", () => {
     }
   });
 });
+
+describe("data intake: mapping, attempts, purpose", () => {
+  const H = ["Mã đơn", "Shipper", "Ngày giao", "Loại địa điểm", "Thanh toán", "Lần giao", "Kết quả"];
+  const row = (o: string, d: string, att: number | "" = "", res = "delivered") => [o, "S1", d, "school", "cod", att, res];
+
+  it("maps renamed and reordered columns, and detects them", () => {
+    const rows = [["extra"], ["Loại địa điểm", "Ngày giao", "Shipper", "Mã đơn"], ["school", "2026-10-21", "S1", "A1"]];
+    const d = detectColumns(rows)!;
+    expect(d.headerIndex).toBe(1);
+    expect(Object.keys(d.map).sort()).toEqual(["date", "location_type", "order_id", "rider_id"]);
+    const r = parseTable(rows, "x.csv");
+    expect(r.ok).toBe(true);
+  });
+
+  it("lets the user correct a mapping", () => {
+    const rows = [["Ngay", "Cot2", "Cot3"], ["2026-10-21", "school", "office"]];
+    expect(parseTable(rows, "x.csv").ok).toBe(false); // type column not recognised
+    const r = parseTable(rows, "x.csv", null, new Date(), { location_type: 1 });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.batch.shifts[0].stops[0].locationType).toBe("school");
+  });
+
+  it("keeps a legitimate repeat attempt but flags the same attempt twice", () => {
+    const r = parseTable([H, row("A1", "2026-10-21", 1), row("A1", "2026-10-21", 2), row("A1", "2026-10-21", 2)], "x.csv");
+    if (!r.ok) throw new Error(r.error);
+    const sh = r.batch.shifts[0];
+    expect(sh.stops.length).toBe(2);
+    expect(sh.stops.map((x) => x.isReattempt)).toEqual([false, true]);
+    expect(r.batch.summary.quarantined).toBe(1);
+    expect(r.batch.summary.accepted + r.batch.summary.warning + r.batch.summary.quarantined).toBe(r.batch.summary.rowsRead);
+  });
+
+  it("leaves attempt status unknown when the file does not say", () => {
+    const r = parseTable([H.slice(0, 5), ["A1", "S1", "2026-10-21", "school", "cod"]], "x.csv");
+    if (!r.ok) throw new Error(r.error);
+    expect(r.batch.shifts[0].stops[0].attemptKnown).toBe(false);
+    expect(r.batch.summary.attemptUnknown).toBe(1);
+  });
+
+  it("ignores results when the purpose is plan, and shows them for replay", () => {
+    const rows = [H, row("A1", "2026-10-21", 1, "delivered")];
+    const plan = parseTable(rows, "x.csv", null, new Date(), {}, "plan");
+    const replay = parseTable(rows, "x.csv", null, new Date(), {}, "replay");
+    if (!plan.ok || !replay.ok) throw new Error("parse");
+    expect(plan.batch.shifts[0].actualDatasetOutcome.attempts).toBe(0);
+    expect(replay.batch.shifts[0].actualDatasetOutcome.attempts).toBe(1);
+    expect(replay.batch.knowledge[0].windowHistory).toEqual({});
+  });
+});
+
+describe("success estimate explanation", () => {
+  it("rebuilds the stored table value from its own parts", () => {
+    const x = explainTable("school", "morning", "weekday", "cod");
+    const p = (x.successes + x.strength * x.prior) / (x.attempts + x.strength);
+    expect(Math.abs(p - tableP("school", "morning", "weekday", "cod").p)).toBeLessThan(0.002);
+  });
+  it("falls back to the overall rate for an unknown group", () => {
+    const x = explainTable("school", "morning", "weekday", "nothing" as never);
+    expect(x.found).toBe(false);
+    expect(x.p).toBe(x.prior);
+  });
+});
+

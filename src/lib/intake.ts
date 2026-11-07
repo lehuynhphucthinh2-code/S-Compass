@@ -29,6 +29,7 @@ export interface ImportBatch {
   fileName: string;
   importedAt: string;
   sheet: string | null;
+  purpose?: ImportPurpose;
   columns: Record<string, string>; // field -> column title found in the file
   riders: Rider[];
   shifts: Shift[];
@@ -45,6 +46,10 @@ export interface ImportBatch {
     heavyDays: number;
     places: number;
     newPlaceTypes: number;
+    /** Rows that can be scored and planned (accepted + accepted with warning). */
+    eligible?: number;
+    noPin?: number;
+    attemptUnknown?: number;
   };
   fileNotes: string[];
 }
@@ -57,7 +62,7 @@ export const FAR_PIN_METERS = 300;
 // Broad box around Ho Chi Minh City (incl. Thu Duc, Binh Chanh, Cu Chi, Nha Be).
 const HCMC = { latMin: 10.3, latMax: 11.2, lonMin: 106.3, lonMax: 107.1 };
 
-type Field =
+export type Field =
   | "order_id"
   | "rider_id"
   | "date"
@@ -89,9 +94,30 @@ const ALIASES: Record<Field, string[]> = {
   service_min: ["buyer_address_processing_time_min", "service_minutes", "service_min", "processing_time_min", "handover_minutes"],
   attempt_no: ["attempt_no", "attempt_number", "attempt", "lan_giao"],
   is_reattempt: ["is_reattempt", "reattempt", "retry", "giao_lai"],
-  status: ["delivery_status", "status", "outcome", "trang_thai"],
+  status: ["delivery_status", "status", "outcome", "trang_thai", "ket_qua", "ket_qua_giao"],
   window: ["attempt_time", "time_block", "window", "khung_gio"],
 };
+
+/** What each field does, so a missing column is explained instead of silently ignored. */
+export const FIELD_INFO: Record<Field, { label: string; need: "required" | "scoring" | "optional" | "results"; ifMissing: string }> = {
+  date: { label: "Delivery date", need: "required", ifMissing: "Import is blocked: rows cannot be put on a rider-day." },
+  location_type: { label: "Place type", need: "required", ifMissing: "Import is blocked: without a type the app has no history to score the stop." },
+  order_id: { label: "Order ID", need: "optional", ifMissing: "Rows get row-number IDs, so duplicate orders cannot be detected." },
+  rider_id: { label: "Rider", need: "optional", ifMissing: "All orders of one day go on one imported rider. You can split them later." },
+  location_id: { label: "Place ID", need: "optional", ifMissing: "Orders are grouped by place name or by map pin instead." },
+  location_name: { label: "Place name", need: "optional", ifMissing: "Places are named by ID or shown as “Imported place”." },
+  payment: { label: "Payment", need: "scoring", ifMissing: "Every order is treated as COD (the riskier case). The estimate uses that." },
+  parcel: { label: "Parcel type", need: "optional", ifMissing: "Treated as standard. Only the experimental AI model uses it." },
+  lat: { label: "Latitude", need: "optional", ifMissing: "Orders have no map pin. They stay in the plan but cannot be drawn or routed from a pin." },
+  lon: { label: "Longitude", need: "optional", ifMissing: "Orders have no map pin. They stay in the plan but cannot be drawn or routed from a pin." },
+  service_min: { label: "Handover minutes", need: "optional", ifMissing: "The planner uses the place median, then 15 min." },
+  attempt_no: { label: "Attempt number", need: "optional", ifMissing: "Attempt status stays unknown. The app does not assume a first attempt." },
+  is_reattempt: { label: "Repeat-attempt flag", need: "optional", ifMissing: "Attempt status stays unknown unless attempt number or earlier dates show it." },
+  status: { label: "Delivery result", need: "results", ifMissing: "No past results to show. Not needed for planning." },
+  window: { label: "Attempt time block", need: "results", ifMissing: "No past time block to show. Not needed for planning." },
+};
+
+export type ImportPurpose = "plan" | "replay";
 
 export const TEMPLATE_COLUMNS = [
   "order_id",
@@ -131,6 +157,29 @@ function mapColumns(header: unknown[]): Partial<Record<Field, number>> {
     }
   }
   return out;
+}
+
+/** Fields for which more than one column of the file matches a known name (the user must choose). */
+export function ambiguousFields(header: unknown[]): Field[] {
+  const norm = header.map(normHeader);
+  return (Object.keys(ALIASES) as Field[]).filter((f) => new Set(ALIASES[f].map((a) => norm.indexOf(a)).filter((i) => i >= 0)).size > 1);
+}
+
+export interface ColumnDetection {
+  headerIndex: number;
+  header: string[];
+  map: Partial<Record<Field, number>>;
+  ambiguous: Field[];
+  preview: string[][];
+}
+
+/** First look at a file: which row is the header, which column was matched to which field, and a short preview. */
+export function detectColumns(rows: unknown[][]): ColumnDetection | null {
+  const nonEmpty = rows.filter((r) => Array.isArray(r) && r.some((c) => str(c) !== ""));
+  if (!nonEmpty.length) return null;
+  const { index, map } = findHeader(nonEmpty);
+  const header = (nonEmpty[index] ?? []).map(str);
+  return { headerIndex: index, header, map, ambiguous: ambiguousFields(nonEmpty[index] ?? []), preview: nonEmpty.slice(index + 1, index + 4).map((r) => header.map((_, i) => str(r[i]))) };
 }
 
 /** Find the header row: the row (among the first 10) that matches the most known columns. */
@@ -238,19 +287,34 @@ interface Draft {
   result: RowResult;
 }
 
-export function parseTable(rows: unknown[][], fileName: string, sheet: string | null = null, now = new Date()): IntakeResult {
+export function parseTable(
+  rows: unknown[][],
+  fileName: string,
+  sheet: string | null = null,
+  now = new Date(),
+  /** Column the user picked for a field (index in the header row), or null to say “this file has no such column”. */
+  overrides: Partial<Record<Field, number | null>> = {},
+  purpose?: ImportPurpose,
+): IntakeResult {
   const nonEmpty = rows.filter((r) => Array.isArray(r) && r.some((c) => str(c) !== ""));
   if (nonEmpty.length === 0) return { ok: false, error: "The file is empty.", foundColumns: [] };
-  const { index, map } = findHeader(nonEmpty);
+  const { index, map: autoMap } = findHeader(nonEmpty);
+  const map: Partial<Record<Field, number>> = { ...autoMap };
+  for (const [f, v] of Object.entries(overrides) as [Field, number | null | undefined][]) {
+    if (v === undefined) continue;
+    if (v === null) delete map[f];
+    else map[f] = v;
+  }
   const header = nonEmpty[index] ?? [];
+  const purposeUsed: ImportPurpose = purpose ?? (map.status !== undefined ? "replay" : "plan");
   const foundColumns = header.map(str).filter(Boolean);
   const missing: string[] = [];
-  if (map.date === undefined) missing.push("delivery_date");
-  if (map.location_type === undefined) missing.push("location_type");
+  if (map.date === undefined) missing.push("delivery date");
+  if (map.location_type === undefined) missing.push("place type");
   if (missing.length)
     return {
       ok: false,
-      error: `Required column not found: ${missing.join(", ")}. Use the template, or rename the column in the file.`,
+      error: `Required column not matched: ${missing.join(", ")}. Choose the right column in “Match the columns”, or use the template.`,
       foundColumns,
     };
 
@@ -262,6 +326,8 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
   if (map.rider_id === undefined) fileNotes.push("No rider column: all orders were put on one imported rider per day.");
   if (map.lat === undefined || map.lon === undefined) fileNotes.push("No latitude/longitude columns: every order is treated as having no map pin.");
   if (map.payment === undefined) fileNotes.push("No payment column: every order is treated as COD (the safer, riskier case).");
+  if (purposeUsed === "plan" && (map.status !== undefined || map.window !== undefined)) fileNotes.push("Purpose is “plan these orders”: the delivery result and time-block columns are not used, because they are not known before delivery.");
+  if (purposeUsed === "replay") fileNotes.push("Purpose is “replay past data”: results in the file are shown for comparison only. They do not change the scorer or the plan.");
 
   const cell = (r: unknown[], f: Field) => (map[f] === undefined ? undefined : r[map[f]!]);
   const columns: Record<string, string> = {};
@@ -351,11 +417,11 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
   const earliestDate = new Map<string, string>();
   for (const d of drafts) {
     if (d.result.status === "quarantined" || !d.date) continue;
-    const k = `${d.orderId}|${d.date}`;
+    const k = `${d.orderId}|${d.date}|${d.attemptNo ?? ""}`;
     const prev = firstSeen.get(k);
     if (prev && !d.orderId.startsWith("row-")) {
       d.result.status = "quarantined";
-      d.result.issues.push(`Duplicate: same order on the same day as row ${prev.row}`);
+      d.result.issues.push(`Duplicate: same order, same day and same attempt as row ${prev.row}. A real repeat attempt has its own attempt number.`);
       continue;
     }
     firstSeen.set(k, d);
@@ -452,7 +518,9 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
         const pin = d.latlon ? proj(d.latlon) : null;
         if (pin) riderPins.push(pin);
         const earlier = earliestDate.get(d.orderId);
-        const isReattempt = (d.attemptNo ?? 1) > 1 || d.reattemptFlag === true || (!!earlier && earlier < d.date && !d.orderId.startsWith("row-"));
+        const derivedRepeat = !!earlier && earlier < d.date && !d.orderId.startsWith("row-");
+        const isReattempt = (d.attemptNo ?? 1) > 1 || d.reattemptFlag === true || derivedRepeat;
+        const attemptKnown = d.attemptNo !== null || d.reattemptFlag !== null || derivedRepeat;
         return {
           id: `I${k}-${pad(i + 1)}`,
           receivedOrder: i + 1,
@@ -464,9 +532,10 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
           pin,
           serviceMinutes: d.serviceMin,
           isReattempt,
+          attemptKnown,
         };
       });
-      const withStatus = list.filter((d) => d.delivered !== null);
+      const withStatus = purposeUsed === "plan" ? [] : list.filter((d) => d.delivered !== null);
       const byWindow = { morning: { attempts: 0, delivered: 0 }, afternoon: { attempts: 0, delivered: 0 }, evening: { attempts: 0, delivered: 0 } };
       for (const d of withStatus)
         if (d.window) {
@@ -509,6 +578,7 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
   const batch: ImportBatch = {
     id: `imp-${now.getTime().toString(36)}`,
     fileName,
+    purpose: purposeUsed,
     importedAt: now.toISOString(),
     sheet,
     columns,
@@ -527,6 +597,9 @@ export function parseTable(rows: unknown[][], fileName: string, sheet: string | 
       heavyDays: shiftInfo.filter((s) => s.heavy).length,
       places: knowledge.length,
       newPlaceTypes: all.filter((r) => r.issues.some((x) => x.startsWith("Unknown place type"))).length,
+      eligible: all.filter((r) => r.status !== "quarantined").length,
+      noPin: good.filter((d) => !d.latlon).length,
+      attemptUnknown: shifts.reduce((a, sh) => a + sh.stops.filter((x) => x.attemptKnown === false).length, 0),
     },
     fileNotes,
   };

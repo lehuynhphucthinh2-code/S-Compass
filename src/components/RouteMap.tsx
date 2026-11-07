@@ -47,6 +47,7 @@ export function RouteMap({
   selected,
   onSelect,
   height = 340,
+  baseline,
 }: {
   riderId: string;
   plan: Plan | null;
@@ -54,6 +55,8 @@ export function RouteMap({
   selected?: string | null;
   onSelect?: (stopId: string) => void;
   height?: number;
+  /** Today's-app plan to draw as a faint dashed route under the shown plan. */
+  baseline?: Plan | null;
 }) {
   const { minX, maxX, minY, maxY } = zoneBounds(riderId);
   const rider = riderById(riderId);
@@ -80,6 +83,11 @@ export function RouteMap({
     prev = cur;
   }
   const hub = tx(rider.hub.pos);
+  const baseLine: (readonly [number, number])[] = [];
+  if (baseline && plan && plan.method !== "baseline") {
+    baseLine.push(hub);
+    for (const b of baseline.stops) if (b.point && !Number.isNaN(b.arriveMin)) baseLine.push(tx(b.point));
+  }
 
   return (
     <figure className="m-0">
@@ -101,6 +109,7 @@ export function RouteMap({
             </g>
           );
         })}
+        {baseLine.length > 1 ? <polyline points={baseLine.map((q) => q.join(",")).join(" ")} fill="none" stroke="#8a93a8" strokeWidth={3} strokeDasharray="4 10" strokeOpacity={0.7} /> : null}
         {segments.map((sg, i) => (
           <line
             key={i}
@@ -144,7 +153,7 @@ export function RouteMap({
               style={{ cursor: onSelect ? "pointer" : undefined }}
             >
               <title>{g.map((s) => `#${s.seq} ${s.stopId}`).join(", ")}</title>
-              <circle cx={x} cy={y} r={(g.length > 1 ? 26 : 19) + (isSel ? 4 : 0)} fill={done ? "#fff" : blockColor(lead.block)} stroke={isSel ? "#ee4d2d" : done ? "#8a93a8" : "#fff"} strokeWidth={isSel ? 6 : 3} />
+              <circle cx={x} cy={y} r={(g.length > 1 ? 26 : 19) + (isSel ? 4 : 0)} fill={done ? "#fff" : blockColor(lead.block)} stroke={isSel ? "#ee4d2d" : done ? "#8a93a8" : "#fff"} strokeWidth={isSel ? 6 : 3} strokeDasharray={!isSel && !done && (lead.pointSource === "map pin" || lead.pointSource === "suggested entrance") ? "6 5" : undefined} />
               {blocks.length > 1
                 ? blocks.slice(1).map((b, i) => <circle key={b} cx={x + 22 + i * 15} cy={y - 20} r={8} fill={blockColor(b)} stroke="#fff" strokeWidth={1.5} />)
                 : null}
@@ -156,13 +165,15 @@ export function RouteMap({
         })}
       </svg>
       <figcaption className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-faint">
-        <span>Schematic, not a street map: de-identified dataset positions, straight lines between stops. A bigger circle with a number = several stops at one site.</span>
+        <span>Schematic, not a street map: positions come from the data, lines are straight and not road routes. Numbers match the timeline. A bigger circle = several stops at one site. Start: {rider.hub.name}.</span>
+        <span>Dashed outline = approximate location (map pin or suggested entrance); solid = verified entrance or pickup point.</span>
+        {baseLine.length > 1 ? <span>Grey dashed line = Today’s app route.</span> : null}
         {(["morning", "afternoon", "evening"] as const).map((b) => (
           <span key={b} className="inline-flex items-center gap-1">
             <span className="size-2.5 rounded-full" style={{ background: blockColor(b) }} /> {b}
           </span>
         ))}
-        {unlocated.length ? <span className="text-warn">{unlocated.length} stop(s) not on the map (no location or not scheduled)</span> : null}
+        {unlocated.length ? <span className="text-warn">{unlocated.length} stop(s) not on the map (no location or not scheduled): {unlocated.map((u) => u.stopId).join(", ")}. They stay in the list for review.</span> : null}
       </figcaption>
     </figure>
   );

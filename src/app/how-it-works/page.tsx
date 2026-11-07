@@ -51,7 +51,7 @@ export default function HowItWorks() {
             {
               h: "Processing",
               items: [
-                "Look up the chance of first-attempt success for each stop in each block (history table, or the model in the experimental planner)",
+                "Look up the chance that the attempt is delivered for each stop in each block (history table, or the model in the experimental planner)",
                 "Apply hard rules: verified site windows, weekend closures, buyer-confirmed windows, temporary closures",
                 "Choose the block with the best chance; check each block's time capacity and push the cheapest stop later if it overflows",
                 "Order stops inside each block by deadline, then nearest next drop-off point",
