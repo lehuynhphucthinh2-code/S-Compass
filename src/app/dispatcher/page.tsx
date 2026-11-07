@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, ArrowRight, BarChart3, Check, FileUp, Info, Send, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, BarChart3, Check, Clock, FileUp, Info, Package, Send, Sparkles, Target, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { BlockTag, CardStatusBadge, ChanceText, EmptyState, MethodBadge, SourceTag, Stat, TYPE_LABEL } from "@/components/bits";
@@ -731,27 +731,32 @@ function StartHere({ generated, compared, dispatched }: { generated: boolean; co
 /** Presentation mode: the three numbers that matter, in big type. */
 function Glance({ shown, parcels, risk, draft }: { shown: Plan | null; parcels: number; risk: number; draft: boolean }) {
   const late = shown ? shown.totals.endMin > 20 * 60 + 30 : false;
-  const box = "rounded-xl border border-line bg-surface px-4 py-3";
+  const box = (accent: string, i: number) => ({ className: cn("sc-fade rounded-xl border border-line border-t-4 bg-surface px-4 py-3 shadow-[0_1px_2px_rgba(20,33,61,0.04),0_4px_14px_-6px_rgba(20,33,61,0.08)]", accent), style: { ["--d" as string]: `${i * 0.06}s` } });
+  const icon = "size-4";
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <div className={box}>
-        <div className="text-xs text-ink-faint">Parcels today</div>
+      <div {...box("border-t-info", 0)}>
+        <div className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <Package className={cn(icon, "text-info")} /> Parcels today
+        </div>
         <div className="text-3xl font-semibold">{parcels}</div>
       </div>
-      <div className={box}>
-        <div className="flex items-center gap-1 text-xs text-ink-faint">
-          Expected successes <Hint text="Sum of each stop’s chance of success on the first try. Simulated estimate from the AI scorer, not a measured result." />
+      <div {...box("border-t-brand", 1)}>
+        <div className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <Target className={cn(icon, "text-brand")} /> Expected successes <Hint text="Sum of each stop’s chance that the attempt is delivered. An expected count from the history table, not a guaranteed or measured result." />
         </div>
         <div className="text-3xl font-semibold text-brand-ink">{shown ? shown.totals.expectedSuccess.toFixed(1) : "—"}</div>
       </div>
-      <div className={box}>
-        <div className="text-xs text-ink-faint">Estimated finish</div>
+      <div {...box(late ? "border-t-bad" : "border-t-ok", 2)}>
+        <div className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <Clock className={cn(icon, late ? "text-bad" : "text-ok")} /> Estimated finish
+        </div>
         <div className={cn("text-3xl font-semibold", late && "text-bad")}>{shown ? fmt(shown.totals.endMin) : "—"}</div>
         {late ? <div className="text-xs font-medium text-bad">After 20:30: dispatcher review</div> : null}
       </div>
-      <div className={box}>
-        <div className="flex items-center gap-1 text-xs text-ink-faint">
-          Stops at risk <Hint text="Stops planned where history shows under 65% chance, or stops with a warning such as no map pin." />
+      <div {...box(risk > 0 ? "border-t-warn" : "border-t-ok", 3)}>
+        <div className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <TriangleAlert className={cn(icon, risk > 0 ? "text-warn" : "text-ok")} /> Stops at risk <Hint text="Stops planned where history shows under 65% chance, or stops with a warning such as no map pin." />
         </div>
         <div className={cn("text-3xl font-semibold", risk > 0 && "text-warn")}>{shown ? risk : "—"}</div>
         {shown ? <div className="text-xs text-ink-faint">{draft ? "Draft plan · simulated" : "Dispatched plan · simulated"}</div> : null}

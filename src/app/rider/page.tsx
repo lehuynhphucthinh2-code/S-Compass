@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, Clock, DoorOpen, FileText, Flag, MapPin, Navigation, TriangleAlert } from "lucide-react";
+import { CheckCircle2, ChevronDown, Clock, DoorOpen, FileText, Flag, Lightbulb, MapPin, Navigation, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { BlockTag, ChanceText, EmptyState, SourceTag, TYPE_LABEL } from "@/components/bits";
@@ -72,6 +72,12 @@ export default function RiderPage() {
         </div>
       </div>
 
+      <div className="-mt-2" role="progressbar" aria-valuemin={0} aria-valuemax={plan.stops.length} aria-valuenow={done.length} aria-label="Stops done">
+        <div className="h-2 overflow-hidden rounded-full bg-line/70">
+          <div key={done.length} className="sc-grow h-2 rounded-full bg-ok" style={{ width: `${plan.stops.length ? (done.length / plan.stops.length) * 100 : 0}%` }} />
+        </div>
+      </div>
+
       {proposal ? (
         <div className="rounded-xl border-2 border-brand bg-surface">
           <div className="rounded-t-[10px] bg-brand px-4 py-2 text-sm font-semibold text-white">Plan change proposed</div>
@@ -82,7 +88,7 @@ export default function RiderPage() {
       ) : null}
 
       {next && nextStop && nextCard ? (
-        <section className="overflow-hidden rounded-xl border border-line bg-surface" aria-labelledby="next-stop">
+        <section key={next.stopId} className="sc-fade overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_6px_24px_-10px_rgba(20,33,61,0.25)]" aria-labelledby="next-stop">
           <div className="flex items-center justify-between bg-ink px-4 py-2 text-white">
             <span id="next-stop" className="text-sm font-semibold">
               Next stop · #{next.seq}
@@ -99,14 +105,17 @@ export default function RiderPage() {
                 {nextStop.payment === "cod" ? " · collect cash (COD)" : ""}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <BlockTag block={next.block} />
-              <span className="text-ink-soft">
-                ETA {fmt(next.arriveMin)} <span className="text-xs text-ink-faint">(simulated)</span>
-              </span>
-              <span>
-                Chance <ChanceText p={next.p} />
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-canvas px-3 py-2 text-center">
+                <div className="text-2xl font-semibold leading-none">{fmt(next.arriveMin)}</div>
+                <div className="mt-1 text-[10px] text-ink-faint">ETA · simulated</div>
+              </div>
+              <div className="space-y-1 text-sm">
+                <BlockTag block={next.block} />
+                <div>
+                  Chance <ChanceText p={next.p} />
+                </div>
+              </div>
             </div>
             <div className="space-y-1.5 rounded-lg bg-canvas p-3 text-sm">
               <p className="flex gap-2">
@@ -121,8 +130,10 @@ export default function RiderPage() {
                 <span>{nextCard.handover}</span>
               </p>
             </div>
-            <div>
-              <p className="mb-1 text-xs font-medium text-ink-faint">Why now</p>
+            <div className="rounded-lg border border-brand/25 bg-brand-tint/50 p-3">
+              <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-brand-ink">
+                <Lightbulb className="size-4" /> Why now
+              </p>
               <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
                 {next.reasons.slice(0, present ? 1 : 3).map((r) => (
                   <li key={r}>{r}</li>
@@ -173,7 +184,7 @@ export default function RiderPage() {
               const c = cards[st.locationKey];
               const unscheduled = Number.isNaN(s.arriveMin);
               return (
-                <li key={s.stopId} className="flex items-center gap-3 border-b border-line/70 px-4 py-2.5 last:border-0">
+                <li key={s.stopId} className={cn("flex items-center gap-3 border-b border-l-4 border-b-line/70 px-4 py-2.5 last:border-b-0", s.block === "morning" ? "border-l-morning" : s.block === "afternoon" ? "border-l-afternoon" : "border-l-evening")}>
                   <span className="w-6 text-right text-sm text-ink-faint">{s.seq}</span>
                   <button className="min-w-0 flex-1 text-left" onClick={() => setCard({ key: st.locationKey, stopId: s.stopId })}>
                     <span className="block truncate text-sm font-medium">{c.name}</span>

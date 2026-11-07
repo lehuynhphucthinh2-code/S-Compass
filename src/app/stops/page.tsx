@@ -57,7 +57,7 @@ export default function StopsPage() {
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((c) => (
             <li key={c.key}>
-              <button onClick={() => setOpen(c.key)} className={cn("h-full w-full rounded-xl border border-line bg-surface p-4 text-left hover:border-ink-faint", present && "py-3")}>
+              <button onClick={() => setOpen(c.key)} className={cn("h-full w-full rounded-xl border border-l-4 border-line bg-surface p-4 text-left shadow-[0_1px_2px_rgba(20,33,61,0.04)] transition hover:-translate-y-px hover:shadow-md", present && "py-3", c.status === "verified" ? "border-l-ok" : c.status === "suggested" ? "border-l-warn" : c.status === "disputed" ? "border-l-bad" : "border-l-ink-faint")}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold leading-5">{c.name}</span>
                   <CardStatusBadge status={c.status} />
