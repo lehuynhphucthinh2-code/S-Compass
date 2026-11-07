@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Database, HardDrive, RotateCcw, TriangleAlert } from "lucide-react";
+import { Compass, Database, HardDrive, HelpCircle, RotateCcw, TriangleAlert, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -39,6 +39,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname, update]);
 
   const { present } = usePresent();
+  React.useEffect(() => {
+    const item = NAV.find((n) => pathname?.startsWith(n.href));
+    const title = item ? `${item.label} · S-Compass` : "S-Compass · competition prototype";
+    document.title = title;
+    const t = setTimeout(() => {
+      document.title = title; // Next sets its default title after hydration; set ours again
+    }, 150);
+    return () => clearTimeout(t);
+  }, [pathname]);
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
@@ -56,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <PresentToggle />
             <AnimToggle />
+            <TourButton />
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium",
@@ -140,6 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <main className="mx-auto max-w-[1440px] px-4 py-5">{children}</main>
+      <Tour />
       <footer className="mx-auto max-w-[1440px] px-4 pb-8 text-xs leading-5 text-ink-faint">
         S-Compass is a Business Challenge 2026 competition prototype by team BCE004 (Watt the hedge). It is not an official Shopee product. Buyer and place names are fictional.
         Positions are de-identified dataset pins. No real SMS, e-mail or payment request is ever sent.
@@ -236,5 +247,77 @@ function AnimToggle() {
       </span>
       Animation {anim ? "on" : "off"}
     </button>
+  );
+}
+
+const TOUR_KEY = "s-compass-tour-v1";
+const TOUR_STEPS = [
+  { title: "1. Pick a rider and day", text: "Start on the Dispatcher. The “Start here” bar always shows the next step." },
+  { title: "2. Generate and compare", text: "Generate a plan, then open Compare plans: Today’s app against S-Compass, with the same stops and the same scorer." },
+  { title: "3. Have a file?", text: "Open Data intake: match the columns, review every row, then import. Nothing is planned until you confirm." },
+];
+
+function TourButton() {
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new Event("s-compass-tour"))}
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line px-2.5 text-xs font-medium text-ink-soft hover:text-ink"
+      title="Show the 3-step quick tour"
+    >
+      <HelpCircle className="size-3.5" /> Quick tour
+    </button>
+  );
+}
+
+/** A small card, not a full-screen overlay, so it never blocks the demo. It shows once; “Quick tour” replays it. */
+function Tour() {
+  const [step, setStep] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    try {
+      if (!window.localStorage.getItem(TOUR_KEY)) setStep(0);
+    } catch {
+      /* storage blocked: skip the automatic tour */
+    }
+    const open = () => setStep(0);
+    window.addEventListener("s-compass-tour", open);
+    return () => window.removeEventListener("s-compass-tour", open);
+  }, []);
+  const close = () => {
+    setStep(null);
+    try {
+      window.localStorage.setItem(TOUR_KEY, "done");
+    } catch {
+      /* ignore */
+    }
+  };
+  if (step === null) return null;
+  const s = TOUR_STEPS[step];
+  const last = step === TOUR_STEPS.length - 1;
+  return (
+    <aside className="sc-fade fixed bottom-4 right-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface p-4 shadow-xl" role="dialog" aria-label="Quick tour">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold">{s.title}</p>
+        <button type="button" onClick={close} aria-label="Close the tour" className="text-ink-faint hover:text-ink">
+          <X className="size-4" />
+        </button>
+      </div>
+      <p className="mt-1 text-sm text-ink-soft">{s.text}</p>
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex gap-1.5" aria-hidden>
+          {TOUR_STEPS.map((_, i) => (
+            <span key={i} className={cn("size-2 rounded-full", i === step ? "bg-brand" : "bg-line")} />
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="ghost" onClick={close}>
+            Skip
+          </Button>
+          <Button size="sm" variant="primary" onClick={() => (last ? close() : setStep(step + 1))}>
+            {last ? "Done" : "Next"}
+          </Button>
+        </div>
+      </div>
+    </aside>
   );
 }

@@ -88,7 +88,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   }, [state, update, reset, adapter, saveStatus, loadError]);
 
   if (!value) {
-    return <div className="p-8 text-sm text-ink-faint">Loading demo data…</div>;
+    return <LoadingScreen />;
   }
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
 }
@@ -97,4 +97,31 @@ export function useDemo() {
   const ctx = React.useContext(DemoContext);
   if (!ctx) throw new Error("useDemo must be used inside DemoProvider");
   return ctx;
+}
+
+/** Shown for a moment while the saved demo state is read, so the screen is never blank. */
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen" role="status" aria-label="Loading S-Compass">
+      <div className="border-b border-line bg-surface px-4 py-3">
+        <div className="mx-auto flex max-w-[1440px] items-center gap-3">
+          <div className="size-9 animate-pulse rounded-lg bg-brand/80" />
+          <div className="space-y-1.5">
+            <div className="h-3.5 w-24 animate-pulse rounded bg-line" />
+            <div className="h-2.5 w-32 animate-pulse rounded bg-line/70" />
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto max-w-[1440px] space-y-4 px-4 py-5">
+        <div className="h-12 animate-pulse rounded-xl bg-line/60" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-20 animate-pulse rounded-xl bg-line/60" />
+          ))}
+        </div>
+        <div className="h-64 animate-pulse rounded-xl bg-line/50" />
+        <p className="text-sm text-ink-faint">Loading demo data…</p>
+      </div>
+    </div>
+  );
 }
