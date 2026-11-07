@@ -7,9 +7,9 @@ export function Panel({ className, ...props }: React.HTMLAttributes<HTMLElement>
 
 export function PanelHeader({ title, note, actions, className }: { title: React.ReactNode; note?: React.ReactNode; actions?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-line bg-gradient-to-b from-[#f4f7fc] to-surface px-4 py-3", className)}>
+    <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-line/60 bg-gradient-to-b from-[#f4f7fc] to-surface px-5 py-3.5", className)}>
       <div className="min-w-0">
-        <h2 className="text-[15px] font-semibold leading-6">{title}</h2>
+        <h2 className="text-base font-semibold leading-6 tracking-tight">{title}</h2>
         {note ? <p className="text-xs leading-5 text-ink-faint">{note}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

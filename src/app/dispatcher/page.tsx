@@ -71,11 +71,11 @@ export default function DispatcherPage() {
 
   return (
     <div className="space-y-5">
-      <DataSourceBar imported={shift.id.startsWith("imp-")} shiftDate={shift.date} weekday={shift.weekday} parcels={shift.stops.length} />
-      <StartHere generated={!!shown} compared={compared} dispatched={!!plan} />
-      {/* Shift and planning controls */}
+      {/* Hero card: data source, steps and controls in one place */}
       <Panel>
-        <div className="flex flex-wrap items-end gap-4 px-4 py-4">
+        <DataSourceBar imported={shift.id.startsWith("imp-")} shiftDate={shift.date} weekday={shift.weekday} parcels={shift.stops.length} />
+        <StartHere generated={!!shown} compared={compared} dispatched={!!plan} />
+        <div className="flex flex-wrap items-end gap-4 px-5 py-5">
           <div>
             <label htmlFor="rider" className="text-xs text-ink-faint">
               Rider
@@ -162,7 +162,7 @@ export default function DispatcherPage() {
             ) : null}
           </div>
         </div>
-        <p className="border-t border-line px-4 py-2 text-xs text-ink-faint">
+        <p className="border-t border-line/60 bg-canvas/40 px-5 py-2.5 text-xs text-ink-faint">
           {present ? (
             <>
               {state.method === "baseline" && "Today’s app: nearest map pin next. It does not know when places can receive."}
@@ -647,7 +647,7 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
             {items.map((x) => (
               <div key={x.label}>
                 <dt className="text-xs text-ink-faint">{x.label}</dt>
-                <dd className="text-3xl font-semibold text-ink-soft">{x.format(x.a)}</dd>
+                <dd className="text-4xl font-bold tracking-tight text-ink-soft">{x.format(x.a)}</dd>
                 <div className="mt-1 h-2 rounded-full bg-line/70">
                   <div className="sc-grow h-2 rounded-full bg-ink-faint/60" style={{ width: `${Math.max(4, x.bar(x.a, max(x)) * 100)}%` }} />
                 </div>
@@ -666,7 +666,7 @@ function CompareCards({ plans, onUse }: { plans: Plan[]; onUse: (p: Plan) => voi
             {items.map((x) => (
               <div key={x.label}>
                 <dt className="text-xs text-ink-faint">{x.label}</dt>
-                <dd className="flex flex-wrap items-baseline gap-2 text-3xl font-semibold">
+                <dd className="flex flex-wrap items-baseline gap-2 text-4xl font-bold tracking-tight">
                   <CountUp from={x.a} to={x.b} format={x.format} />
                   {isBetter(x) ? <span className="sc-fade rounded-full bg-ok-tint px-2 py-0.5 text-xs font-semibold text-ok" style={{ ["--d" as string]: "0.7s" }}>{x.gain(x.a, x.b)}</span> : null}
                 </dd>
@@ -704,7 +704,7 @@ function StartHere({ generated, compared, dispatched }: { generated: boolean; co
   ];
   const next = steps.find((x) => !x.done)?.n;
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl border border-line bg-surface px-4 py-3">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-line/60 px-5 py-3">
       <span className="mr-1 text-sm font-semibold">Start here</span>
       {steps.map((x, i) => (
         <React.Fragment key={x.n}>
@@ -731,7 +731,7 @@ function StartHere({ generated, compared, dispatched }: { generated: boolean; co
 /** Presentation mode: the three numbers that matter, in big type. */
 function Glance({ shown, parcels, risk, draft }: { shown: Plan | null; parcels: number; risk: number; draft: boolean }) {
   const late = shown ? shown.totals.endMin > 20 * 60 + 30 : false;
-  const box = (accent: string, i: number) => ({ className: cn("sc-fade rounded-xl border border-line border-t-4 bg-surface px-4 py-3 shadow-[0_1px_2px_rgba(20,33,61,0.04),0_4px_14px_-6px_rgba(20,33,61,0.08)]", accent), style: { ["--d" as string]: `${i * 0.06}s` } });
+  const box = (accent: string, i: number) => ({ className: cn("sc-fade rounded-xl border border-line/60 border-t-4 bg-surface px-5 py-4 shadow-[0_1px_2px_rgba(20,33,61,0.04),0_4px_14px_-6px_rgba(20,33,61,0.08)]", accent), style: { ["--d" as string]: `${i * 0.06}s` } });
   const icon = "size-4";
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -739,26 +739,26 @@ function Glance({ shown, parcels, risk, draft }: { shown: Plan | null; parcels: 
         <div className="flex items-center gap-1.5 text-xs text-ink-faint">
           <Package className={cn(icon, "text-info")} /> Parcels today
         </div>
-        <div className="text-3xl font-semibold">{parcels}</div>
+        <div className="text-4xl font-bold tracking-tight">{parcels}</div>
       </div>
       <div {...box("border-t-brand", 1)}>
         <div className="flex items-center gap-1.5 text-xs text-ink-faint">
           <Target className={cn(icon, "text-brand")} /> Expected successes <Hint text="Sum of each stop’s chance that the attempt is delivered. An expected count from the history table, not a guaranteed or measured result." />
         </div>
-        <div className="text-3xl font-semibold text-brand-ink">{shown ? shown.totals.expectedSuccess.toFixed(1) : "—"}</div>
+        <div className="text-4xl font-bold tracking-tight text-brand-ink">{shown ? shown.totals.expectedSuccess.toFixed(1) : "—"}</div>
       </div>
       <div {...box(late ? "border-t-bad" : "border-t-ok", 2)}>
         <div className="flex items-center gap-1.5 text-xs text-ink-faint">
           <Clock className={cn(icon, late ? "text-bad" : "text-ok")} /> Estimated finish
         </div>
-        <div className={cn("text-3xl font-semibold", late && "text-bad")}>{shown ? fmt(shown.totals.endMin) : "—"}</div>
+        <div className={cn("text-4xl font-bold tracking-tight", late && "text-bad")}>{shown ? fmt(shown.totals.endMin) : "—"}</div>
         {late ? <div className="text-xs font-medium text-bad">After 20:30: dispatcher review</div> : null}
       </div>
       <div {...box(risk > 0 ? "border-t-warn" : "border-t-ok", 3)}>
         <div className="flex items-center gap-1.5 text-xs text-ink-faint">
           <TriangleAlert className={cn(icon, risk > 0 ? "text-warn" : "text-ok")} /> Stops at risk <Hint text="Stops planned where history shows under 65% chance, or stops with a warning such as no map pin." />
         </div>
-        <div className={cn("text-3xl font-semibold", risk > 0 && "text-warn")}>{shown ? risk : "—"}</div>
+        <div className={cn("text-4xl font-bold tracking-tight", risk > 0 && "text-warn")}>{shown ? risk : "—"}</div>
         {shown ? <div className="text-xs text-ink-faint">{draft ? "Draft plan · simulated" : "Dispatched plan · simulated"}</div> : null}
       </div>
     </div>
@@ -824,7 +824,7 @@ function EstimateExplain({ ps, stop, weekend, method, imported }: { ps: PlannedS
 function DataSourceBar({ imported, shiftDate, weekday, parcels }: { imported: boolean; shiftDate: string; weekday: string; parcels: number }) {
   const b = activeImportBatch();
   return (
-    <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-2 text-sm", imported ? "border-brand/40 bg-brand-tint/40" : "border-line bg-surface")}>
+    <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line/60 px-5 py-2.5 text-sm", imported && "bg-brand-tint/40")}>
       <Badge tone={imported ? "ok" : "neutral"}>{imported ? "Imported data" : "Demo data"}</Badge>
       <span>
         {imported && b ? (

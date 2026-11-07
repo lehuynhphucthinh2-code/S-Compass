@@ -341,7 +341,7 @@ function PageBanner({ pathname }: { pathname: string | null }) {
   return (
     <div className="bg-gradient-to-r from-navy via-navy-2 to-[#c2381d]">
       <div key={key} className="sc-fade mx-auto flex max-w-[1440px] flex-wrap items-baseline gap-x-4 gap-y-0.5 px-4 py-3 text-white">
-        <p className="text-lg font-semibold tracking-tight">{b.title}</p>
+        <p className="text-xl font-semibold tracking-tight">{b.title}</p>
         <p className="text-sm text-white/75">{b.text}</p>
       </div>
     </div>
