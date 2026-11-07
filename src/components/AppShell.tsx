@@ -50,15 +50,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-navy text-white shadow-lg">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
           <Link href="/dispatcher" className="flex items-center gap-2.5" aria-label="S-Compass home">
             <span className="grid size-9 place-items-center rounded-lg bg-brand text-white">
               <Compass className="size-5" aria-hidden />
             </span>
             <span className="leading-tight">
-              <span className="block text-[17px] font-semibold tracking-tight">S-Compass</span>
-              <span className="block text-[11px] text-ink-faint">Competition prototype</span>
+              <span className="block text-[17px] font-semibold tracking-tight text-white">S-Compass</span>
+              <span className="block text-[11px] text-white/60">Competition prototype</span>
             </span>
           </Link>
 
@@ -69,14 +69,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium",
-                adapter.mode === "local" ? "bg-warn-tint text-warn" : "bg-info-tint text-info",
+                adapter.mode === "local" ? "bg-amber-300/15 text-amber-200" : "bg-sky-300/15 text-sky-200",
               )}
               title={adapter.label}
             >
               {adapter.mode === "local" ? <HardDrive className="size-3.5" /> : <Database className="size-3.5" />}
               {adapter.mode === "local" ? "Demo Mode" : "Supabase"}
             </span>
-            <label className={cn("flex items-center gap-1.5 text-xs text-ink-faint", present && "hidden")}>
+            <label className={cn("flex items-center gap-1.5 text-xs text-white/70", present && "hidden")}>
               <span className="hidden sm:inline">Demo role</span>
               <select
                 aria-label="Demo role switcher (demo interaction, not a permission system)"
@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {present ? null : <TesterButton />}
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="sm" variant="ghost" aria-label="Reset demo">
+                <Button size="sm" variant="ghost" aria-label="Reset demo" className="text-white/80 hover:bg-white/10 hover:text-white">
                   <RotateCcw /> Reset demo
                 </Button>
               </DialogTrigger>
@@ -125,7 +125,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm",
-                      active ? "border-brand font-semibold text-ink" : "border-transparent text-ink-soft hover:text-ink",
+                      active ? "border-brand font-semibold text-white" : "border-transparent text-white/65 hover:text-white",
                     )}
                   >
                     {n.label}
@@ -138,6 +138,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
+      <PageBanner pathname={pathname} />
       {loadError ? (
         <div role="alert" className="border-b border-bad/30 bg-bad-tint px-4 py-2 text-sm text-bad">
           <TriangleAlert className="mr-1 inline size-4" /> {loadError}. Started a fresh local demo instead.
@@ -177,7 +178,7 @@ function TesterButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" title="Who is testing? Used in the evidence log">
+        <Button size="sm" variant="ghost" title="Who is testing? Used in the evidence log" className="text-white/80 hover:bg-white/10 hover:text-white">
           Tester: {state.tester.name || "not set"}
         </Button>
       </DialogTrigger>
@@ -221,9 +222,9 @@ function PresentToggle() {
       aria-checked={present}
       onClick={() => setPresent(!present)}
       title="Presentation mode: short labels and big numbers. Turn off to see every detail."
-      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", present ? "border-brand bg-brand-tint text-brand-ink" : "border-line text-ink-soft")}
+      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", present ? "border-brand bg-brand text-white" : "border-white/25 text-white/80")}
     >
-      <span className={cn("relative h-4 w-7 rounded-full transition-colors", present ? "bg-brand" : "bg-line")}>
+      <span className={cn("relative h-4 w-7 rounded-full transition-colors", present ? "bg-white/40" : "bg-white/25")}>
         <span className={cn("absolute top-0.5 size-3 rounded-full bg-white transition-all", present ? "left-3.5" : "left-0.5")} />
       </span>
       Presentation {present ? "on" : "off"}
@@ -240,9 +241,9 @@ function AnimToggle() {
       aria-checked={anim}
       onClick={() => setAnim(!anim)}
       title="Animation: short movements that show what changed. Turn off if the computer is slow."
-      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", anim ? "border-line bg-surface text-ink" : "border-line text-ink-faint")}
+      className={cn("inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-xs font-medium", anim ? "border-white/25 bg-white/10 text-white" : "border-white/20 text-white/60")}
     >
-      <span className={cn("relative h-4 w-7 rounded-full transition-colors", anim ? "bg-ok" : "bg-line")}>
+      <span className={cn("relative h-4 w-7 rounded-full transition-colors", anim ? "bg-emerald-400" : "bg-white/25")}>
         <span className={cn("absolute top-0.5 size-3 rounded-full bg-white transition-all", anim ? "left-3.5" : "left-0.5")} />
       </span>
       Animation {anim ? "on" : "off"}
@@ -262,7 +263,7 @@ function TourButton() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event("s-compass-tour"))}
-      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line px-2.5 text-xs font-medium text-ink-soft hover:text-ink"
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/25 px-2.5 text-xs font-medium text-white/80 hover:text-white"
       title="Show the 3-step quick tour"
     >
       <HelpCircle className="size-3.5" /> Quick tour
@@ -319,5 +320,30 @@ function Tour() {
         </div>
       </div>
     </aside>
+  );
+}
+
+const BANNERS: Record<string, { title: string; text: string }> = {
+  "/dispatcher": { title: "Dispatcher", text: "Plan today’s deliveries, compare plans, and send the best one to the rider." },
+  "/intake": { title: "Data intake", text: "Bring in an Excel or CSV file: match the columns, review every row, then import." },
+  "/rider": { title: "Rider", text: "What the rider sees: the next stop, and why it comes now." },
+  "/stops": { title: "Stop cards", text: "Local knowledge for each delivery site, checked before it is trusted." },
+  "/buyer": { title: "Buyer simulation", text: "How a buyer confirms a delivery time. Simulated: no real messages are sent." },
+  "/replan": { title: "Replanning", text: "When something changes, the app proposes a new plan and the dispatcher decides." },
+  "/evidence": { title: "Evidence", text: "Every action is logged, so the results can be checked." },
+  "/how-it-works": { title: "How it works", text: "The data, the scorer and the rules behind each plan." },
+};
+
+function PageBanner({ pathname }: { pathname: string | null }) {
+  const key = Object.keys(BANNERS).find((k) => pathname?.startsWith(k));
+  if (!key) return null;
+  const b = BANNERS[key];
+  return (
+    <div className="bg-gradient-to-r from-navy via-navy-2 to-[#c2381d]">
+      <div key={key} className="sc-fade mx-auto flex max-w-[1440px] flex-wrap items-baseline gap-x-4 gap-y-0.5 px-4 py-3 text-white">
+        <p className="text-lg font-semibold tracking-tight">{b.title}</p>
+        <p className="text-sm text-white/75">{b.text}</p>
+      </div>
+    </div>
   );
 }

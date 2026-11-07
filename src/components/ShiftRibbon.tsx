@@ -110,9 +110,10 @@ function LaneRow({ label, sub, dot, count, children }: { label: string; sub: str
     <>
       <div className="flex flex-col justify-center py-1 text-xs leading-4">
         <span className="inline-flex items-center gap-1.5 font-semibold text-ink-soft">
-          <span className={cn("size-2 rounded-full", dot)} /> {label} <span className="font-normal text-ink-faint">· {count} stop{count === 1 ? "" : "s"}</span>
+          <span className={cn("size-2 rounded-full", dot)} /> {label}
         </span>
         <span className="whitespace-nowrap pl-3.5 text-ink-faint">{sub}</span>
+        <span className="whitespace-nowrap pl-3.5 text-ink-faint">{count} stop{count === 1 ? "" : "s"}</span>
       </div>
       <div className="py-1">{children}</div>
     </>
